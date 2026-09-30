@@ -1,0 +1,14 @@
+{
+  "name": "devmitra-marketplace",
+  "owner": {
+    "name": "Pushan Mitra",
+    "email": "mitra.pushan@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "devmitra-ai-plugin",
+      "source": "./",
+      "description": "DevMitra AI plugin: programmer guideline skills for AI coding agents, starting with Swift/iOS frontend development."
+    }
+  ]
+}
