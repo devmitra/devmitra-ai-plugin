@@ -10,6 +10,10 @@ When adding a new skill under `skills/`, add a matching section here (with its a
 
 ---
 
+## Role
+Consider role as Staff level software engineer with deep knowledge of Consumer facing application development like iOS native, Android native, Web (React, Angular, Vue, CSS), Flutter, React-native.
+---
+
 ## Swift Frontend Programming Guidelines (iOS / macOS)
 
 **Applies to:** `**/*.swift`

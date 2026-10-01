@@ -28,6 +28,7 @@ General rule: each input below must be clear and sufficient to generate the fron
 
 ## Artifact saving paths and file names
 
+- Check an artifact directory `{root}/.agentic_coding/` exists or not. If not, create it.
 - Save all non-code artifacts (Markdown and other generated non-Swift, non-executable files) under `root/.agentic_coding/{component_name}/`.
 - Prefix all generated files with `{component_name}`, e.g. `{component_name}View.swift`, `{component_name}_plan.md`.
 
@@ -96,10 +97,15 @@ Log as much as possible with appropriate context. Guidelines:
 - **Use Keychain for sensitive data**, never `UserDefaults`.
 - **Certificate/App Transport Security compliance** — no arbitrary loads over HTTP without explicit, justified exceptions.
 
-### Architecture & Maintainability
+### Maintainability
 - **Consistent architecture pattern** (MVVM, TCA, etc.) applied uniformly — avoid massive view controllers/views mixing business logic and UI.
 - **Dependency injection over singletons** for testability, except where a singleton is genuinely justified (e.g., `URLSession.shared`).
 - **Access control discipline** — default to `private`/`fileprivate`; only expose what's needed (`public`/`open` used deliberately, especially in frameworks).
+
+## Architecture and Design Patterns
+
+- **Check for existing patterns**: Check `{root}/.agentic_coding/design_and_architecture_patterns.md` for existing architecture and design patterns. If a pattern exists, reuse it, ignore next steps; 
+- **Creation of design patterns**: If file does not exists check existing code base to identify patter, also use `references/design_and_architecture_patterns_guid.md` to create a new design pattern for the . Review with user and get user approval before creating a new design pattern.
 
 ### Testing & CI
 - **Unit tests required for business logic and view models**, not just UI smoke tests.
@@ -127,7 +133,7 @@ Use a simple agentic loop to create a frontend component, following the loop bel
 1. Validate inputs (see Inputs validation above).
 2. If anything is unclear, ask the user for clarification and re-validate.
 3. Once inputs are clear, finalize scope and get user approval.
-4. Save as `{component_name}_intent.md`. Identify or generate the component name from the input.
+4. Save as `{component_name}_intent.md`. Identify or generate the component name from the input. If file already exists then append change intension to file with timestamp and other details.
 
 ### 2. Plan
 
@@ -137,9 +143,9 @@ In the plan phase, perform the following actions sequentially:
 - Plan the component per the repo coding standard.
 - Ask user for clarification and go back to the previous step if needed.
 - Get approval from user.
-- Create and save as `{component_name}_plan.md`.
+- Create and save as `{component_name}_plan.md`. Like `{component_name}_intent.md`, if file already exists then append change plan to file with timestamp and other details.
 
-### 3. Generate Code
+### 3. Generate Code and test
 
 - Use design skills and available design templates within the repo to design the component. Review design with user and get approval.
 - Generate view or views. All views should be visible in Xcode playground.
