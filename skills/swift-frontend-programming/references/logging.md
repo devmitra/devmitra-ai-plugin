@@ -1,188 +1,93 @@
 # Logger implementation tips
 
-## Log levels
-Minimum four levels: **Error**, **Warning**, **Info**, **Debug**. Every entry carries file name, line number, timestamp, and an event/identifier key.
+Prefer, in this order: (1) the logging framework the repo already uses, (2) the minimal OSLog wrapper below, (3) [swift-log](https://github.com/apple/swift-log) / [Pulse](https://github.com/kean/Pulse) when the app needs pluggable backends, file export or a log viewer.
 
-- **Error**: stack trace + error details + app state that may have caused it.
+## Log levels
+Minimum four levels: **Error**, **Warning**, **Info**, **Debug**. Every entry carries file, line and function (via `#file`/`#line`/`#function`); the system adds the timestamp.
+
+- **Error**: error details + app state that may have caused it.
 - **Warning**: unexpected behavior or input.
 - **Info**: major events/checkpoints, usable for analytics and journey timelines.
-- **Debug**: debugging only — must be disabled in production builds.
+- **Debug**: debugging only — OSLog does not persist debug messages, and the wrapper below compiles them out of release builds.
 
 ## Implementation guideline
 
-- Wrap the logger in an app-level facade for customization.
-- Configurable via code and external config/env (per-level enable/disable).
-- Thread safe and exception free.
-- Logging functions accept variable-length arguments.
-- Mask secret/sensitive/privacy data before it is written out.
-- Optionally integrate with third-party services (CrashLytics, Firebase Analytics) or adopt an existing framework ([swift-log](https://github.com/apple/swift-log), [Pulse](https://github.com/kean/Pulse)) instead of rolling a custom one.
+- Wrap `os.Logger` in an app-level facade (`Log`) so call sites never touch OSLog directly.
+- Synchronous, non-throwing, Swift 6 clean: no mutable statics, no actors needed. Configuration is immutable, read once from the environment (`LOG_LEVELS=error,warning,info,debug`) for per-level enable/disable.
+- Privacy: message text is logged as `.private` by default (redacted outside a debugger/dev device). Pass `isPublic: true` only for non-sensitive text. Never log secrets, tokens, or PII even as private.
+- Log errors with full detail (`String(describing: error)`), not just `localizedDescription`.
+- Variable-length items are accepted and stringified before logging.
 
-## Logger backend
-
-- Console is one option.
-- File-based backends in the app sandbox:
-  - **Simple text**: console-style lines with rotating files.
-  - **CSV**: one row per logging event.
-
-## Example logger
+## Example (minimal OSLog logger)
 
 ```swift
-// File: Logger.swift
+// File: Log.swift
 import Foundation
+import os
 
-// MARK: - LogLevel Enum
-internal enum LogLevel: String, Codable {
-    case info = "Info"
-    case warning = "Warning"
-    case error = "Error"
-    case debug = "Debug"
+enum LogLevel: String, CaseIterable, Sendable {
+    case error, warning, info, debug
 }
 
-// MARK: - LogEntry Struct
-internal struct LogEntry: Codable {
-    let timestamp: String
-    let level: LogLevel
-    let message: String
+enum Log {
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "app", category: "app")
 
-    init(level: LogLevel, message: String) {
-        self.timestamp = LogDateFormatter.shared.format(date: Date())
-        self.level = level
-        self.message = message
-    }
-
-    func textRepresentation() -> String {
-        return "\(timestamp) | \(level.rawValue) | \(message)"
-    }
-}
-
-// MARK: - Date Formatter Singleton
-internal final class LogDateFormatter {
-    static let shared = LogDateFormatter()
-    private let formatter: DateFormatter
-
-    private init() {
-        formatter = DateFormatter()
-        formatter.dateFormat = "ddMMyyyy | HH:mm:ss"
-    }
-
-    func format(date: Date) -> String {
-        return formatter.string(from: date)
-    }
-}
-
-// MARK: - Logger Actor
-// `actor` isolates journeyLogs/currentGroupIndex so concurrent callers can't race.
-internal actor Logger {
-    static let shared = Logger()
-
-    static var isEnabled: Bool = true  // Global toggle
-    static var maskData: Bool = true
-
-    private let maxLogCount = 100
-    private var journeyLogs: [[LogEntry]] = [[], []]
-    private var currentGroupIndex = 0
-
-    private init() {}
-
-    // Replace with real redaction rules (emails, tokens, PII patterns, etc.)
-    private func masked(_ message: String) -> String {
-        guard Logger.maskData else { return message }
-        return message
-    }
-
-    func startNewGroup() {
-        guard Logger.isEnabled else { return }
-        currentGroupIndex = (currentGroupIndex + 1) % 2
-        journeyLogs[currentGroupIndex].removeAll()
-    }
-
-    func log(_ level: LogLevel, message: String) {
-        guard Logger.isEnabled else { return }
-
-        let entry = LogEntry(level: level, message: masked(message))
-        var group = journeyLogs[currentGroupIndex]
-
-        if group.count >= maxLogCount {
-            group.removeFirst()
+    /// Immutable, set once at launch. Override with env var LOG_LEVELS, e.g. "error,warning".
+    static let enabledLevels: Set<LogLevel> = {
+        if let raw = ProcessInfo.processInfo.environment["LOG_LEVELS"] {
+            return Set(raw.split(separator: ",").compactMap { LogLevel(rawValue: $0.trimmingCharacters(in: .whitespaces)) })
         }
+        #if DEBUG
+        return Set(LogLevel.allCases)
+        #else
+        return [.error, .warning, .info]          // debug disabled in production
+        #endif
+    }()
 
-        group.append(entry)
-        journeyLogs[currentGroupIndex] = group
-
-        print(entry.textRepresentation()) // Log to console
+    static func error(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
+        write(.error, items, isPublic, location(file, line, function))
     }
 
-    func exportLogsAsJSON() -> String? {
-        guard Logger.isEnabled else { return nil }
+    static func warning(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
+        write(.warning, items, isPublic, location(file, line, function))
+    }
 
-        let combinedLogs = Array(journeyLogs.flatMap { $0 }.reversed())
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        if let data = try? encoder.encode(combinedLogs) {
-            return String(data: data, encoding: .utf8)
+    static func info(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
+        write(.info, items, isPublic, location(file, line, function))
+    }
+
+    static func debug(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
+        #if DEBUG
+        write(.debug, items, isPublic, location(file, line, function))
+        #endif
+    }
+
+    private static func location(_ file: String, _ line: Int, _ function: String) -> String {
+        "\((file as NSString).lastPathComponent):\(line) \(function)"
+    }
+
+    private static func write(_ level: LogLevel, _ items: [Any], _ isPublic: Bool, _ location: String) {
+        guard enabledLevels.contains(level) else { return }
+        let text = items.map { "\($0)" }.joined(separator: " ")
+        switch (level, isPublic) {
+        case (.error, true): logger.error("\(text, privacy: .public) [\(location, privacy: .public)]")
+        case (.error, false): logger.error("\(text, privacy: .private) [\(location, privacy: .public)]")
+        case (.warning, true): logger.warning("\(text, privacy: .public) [\(location, privacy: .public)]")
+        case (.warning, false): logger.warning("\(text, privacy: .private) [\(location, privacy: .public)]")
+        case (.info, true): logger.info("\(text, privacy: .public) [\(location, privacy: .public)]")
+        case (.info, false): logger.info("\(text, privacy: .private) [\(location, privacy: .public)]")
+        case (.debug, true): logger.debug("\(text, privacy: .public) [\(location, privacy: .public)]")
+        case (.debug, false): logger.debug("\(text, privacy: .private) [\(location, privacy: .public)]")
         }
-        return nil
     }
-
-    func exportLogsAsText() -> String {
-        guard Logger.isEnabled else { return "" }
-
-        return journeyLogs
-            .flatMap { $0 }
-            .reversed()
-            .map { $0.textRepresentation() }
-            .joined(separator: "\n---\n")
-    }
-}
-
-// MARK: - Public Logging Functions
-
-internal func infoLog(_ items: Any..., file: NSString = #file, line: Int = #line, function: String = #function) async {
-    guard Logger.isEnabled else { return }
-    let message = items.map { "\($0)" }.joined(separator: " ") + "\n[\(file.lastPathComponent):\(line) \(function)]"
-    await Logger.shared.log(.info, message: message)
-}
-
-internal func warningLog(_ items: Any..., file: NSString = #file, line: Int = #line, function: String = #function) async {
-    guard Logger.isEnabled else { return }
-    let message = items.map { "\($0)" }.joined(separator: " ") + "\n[\(file.lastPathComponent):\(line) \(function)]"
-    await Logger.shared.log(.warning, message: message)
-}
-
-internal func errorLog(_ items: Any..., file: NSString = #file, line: Int = #line, function: String = #function) async {
-    guard Logger.isEnabled else { return }
-    let message = items.map { "\($0)" }.joined(separator: " ") + "\n[\(file.lastPathComponent):\(line) \(function)]"
-    await Logger.shared.log(.error, message: message)
-}
-
-internal func debugLog(_ items: Any..., file: NSString = #file, line: Int = #line, function: String = #function) async {
-    guard Logger.isEnabled else { return }
-    let message = items.map { "\($0)" }.joined(separator: " ") + "\n[\(file.lastPathComponent):\(line) \(function)]"
-    await Logger.shared.log(.debug, message: message)
-}
-
-// MARK: - Public Controls
-
-internal func startNewLogGroup() async {
-    await Logger.shared.startNewGroup()
-    await infoLog("A new journey started")
-}
-
-internal func exportLogsAsJSON() async -> String? {
-    return await Logger.shared.exportLogsAsJSON()
-}
-
-internal func exportLogsAsText() async -> String {
-    return await Logger.shared.exportLogsAsText()
-}
-
-/// Enable SDK Logging
-internal func enableLogging() {
-    Logger.isEnabled = true
-}
-
-/// Disable SDK Logging
-internal func disableLogging() {
-    Logger.isEnabled = false
 }
 ```
+
+Usage: `Log.info("Checklist toggled", id)` · `Log.error("Load failed:", String(describing: error))` · `Log.info("Order placed", orderID, isPublic: true)`.
+
+## Testing the logger
+`enabledLevels` is immutable, so test the pure decision logic by extracting `LogLevel` parsing, or run the unit tests with `LOG_LEVELS` set in the scheme's test environment. Do not add mutable global state just for tests.
+
+## Optional backends (only if required)
+- File-based logs in the app sandbox (rotating text or CSV) via a custom sink, or export from `OSLogStore` for in-app log sharing.
+- Crash/analytics integration (Crashlytics, Firebase Analytics) forwarded from `Log.error`/`Log.info` — mask data before forwarding.

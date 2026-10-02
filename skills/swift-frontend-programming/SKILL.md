@@ -8,6 +8,24 @@ description: This is a guideline for iOS/Mac frontend development in Swift. Use 
 ## Purpose
 The main goal of this skill is to provide strong guideline instructions for Swift-based frontend development for iOS and macOS. Using this skill, AI coding agents can generate efficient, secure, and performance-optimized Swift files along with respective test files written in either Swift Testing/XCTest format or XCUITest for UI automation testing.
 
+**Scope**: the agent's job is to develop components and views, not repository structure. Create project scaffolding only as a last-resort fallback (step 0.3) and only with user approval.
+
+## Context root (`{root}`)
+
+`{root}` is the agent's closest context directory, and may be nested (repo root, sub-repo/package root, or workspace/project root).
+- Start from the path of the file/module being worked on (or the working directory if none) and walk up to the nearest directory containing `project.yml`, `*.xcodeproj`, `*.xcworkspace`, `Package.swift`, or `.git`. That is `{root}`.
+- If more than one candidate is plausible (e.g., a monorepo), state the chosen root in the plan and ask the user when ambiguous.
+- Read broadly, write narrowly: look up existing design/architecture documents from `{root}` upward (nearest wins), but always write new artifacts under the nearest `{root}`.
+
+## Approval policy (applies to every step)
+
+Do not move to the next step without explicit user approval, unless the user explicitly says to proceed without asking (e.g., "auto-approve", "don't ask").
+- Approval gates: (1) inputs clarified, (2) intent and plan, (3) design prototype, (4) creating project structure (0.3), (5) adding a third-party dependency.
+- Batch gates 1 and 2 in a single message if convenient; never batch the design gate with them.
+- If the user cannot be asked (non-interactive session), stop at the gate: write the open questions into the plan file as `Pending approval` and end the turn. Do not assume and continue.
+- In explicit auto-approve mode, log every assumption and self-approved gate in an `Assumptions` section of `{component_name}_intent.md` and `{component_name}_plan.md`.
+- Never invent external references (URLs, video/document IDs, API endpoints, package names). Ask the user, or use clearly marked placeholders.
+
 ## Inputs
 
 Purpose of the frontend component, user interactions, user journey/workflow, validation of inputs, layout, UI transition and animation, navigation, integration with other parts of the application, the path or module to save generated Swift files, and application ecosystem.
@@ -25,11 +43,14 @@ General rule: each input below must be clear and sufficient to generate the fron
 - **UI transition and animation**: state transitions and animations within the view's scope.
 - **Navigation**: how the view is entered and exited.
 - **Integration**: data integration and interaction with the rest of the app — e.g., transitioning to or presenting new UI, interacting with global state, invoking services.
+- **Localization**: which languages/regions are required (default: English only — flag it in the plan). Content from bundled files or APIs is localized by its provider; UI strings are always localizable (see Localization guardrail).
 
 ## Artifact saving paths and file names
 
 - Check an artifact directory `{root}/.agentic_coding/` exists or not. If not, create it.
-- Save all non-code artifacts (Markdown and other generated non-Swift, non-executable files) under `root/.agentic_coding/{component_name}/`.
+- Save all non-code artifacts (Markdown and other generated non-Swift, non-executable files) under `{root}/.agentic_coding/{component_name}/`.
+- Save design artifacts under `{root}/.design/` (not `.agentic_coding/`): the project design specification `{project_name}_design_specification.md` and each component prototype `{component_name}_design.html`. Create the directory if it does not exist.
+- `.design/` and `.agentic_coding/` are committed with the repo by default. Ask the user once whether to gitignore them instead, and follow the answer.
 - Prefix all generated files with `{component_name}`, e.g. `{component_name}View.swift`, `{component_name}_plan.md`.
 
 ## Guardrails and main coding guidelines
@@ -81,10 +102,10 @@ When a needed component isn't available in standard frameworks/libraries, search
 
 ### Logging
 
-**Logger implementation**: Check whether a centralized logging framework is already in use. If not, use `references/logging.md` to implement one.
+**Logger implementation**: Check whether a centralized logging framework is already in use. If not, use the minimal OSLog wrapper in `references/logging.md` (Swift 6 clean).
 
 Log as much as possible with appropriate context. Guidelines:
-- Never expose secret, sensitive, or private information in logs — use masking (implement masking in the logging framework if it's missing).
+- Never expose secret, sensitive, or private information in logs — use OSLog `privacy: .private` by default (or masking in the logging framework if it's missing).
 - Always log errors and exceptions with full detail.
 - Use warning level for unexpected behavior or input, with key details.
 - Use info level for major events, checkpoints, or milestones (these can also feed analytics and user-journey timelines).
@@ -102,11 +123,6 @@ Log as much as possible with appropriate context. Guidelines:
 - **Dependency injection over singletons** for testability, except where a singleton is genuinely justified (e.g., `URLSession.shared`).
 - **Access control discipline** — default to `private`/`fileprivate`; only expose what's needed (`public`/`open` used deliberately, especially in frameworks).
 
-## Architecture and Design Patterns
-
-- **Check for existing patterns**: Check `{root}/.agentic_coding/design_and_architecture_patterns.md` for existing architecture and design patterns. If a pattern exists, reuse it, ignore next steps; 
-- **Creation of design patterns**: If file does not exists check existing code base to identify patter, also use `references/design_and_architecture_patterns_guid.md` to create a new design pattern for the . Review with user and get user approval before creating a new design pattern.
-
 ### Testing & CI
 - **Unit tests required for business logic and view models**, not just UI smoke tests.
 - **SwiftLint (or equivalent) enforced in CI**, not just locally.
@@ -116,7 +132,14 @@ Log as much as possible with appropriate context. Guidelines:
 ### Performance
 - **Avoid retain-heavy patterns in SwiftUI** — unnecessary `@State`/`@Published` triggering re-renders.
 - **Profile with Instruments** for memory leaks and main-thread hangs before shipping, especially on lists/scroll views with images.
-- **Lazy-load images and heavy views** (`LazyVStack`/`LazyHStack`, proper cell reuse in `UITableView`/`UICollectionView`).
+- **Lazy-load images and heavy views** (`LazyVStack`/`LazyHStack`/`List`, proper cell reuse in `UITableView`/`UICollectionView`). Required for long, data-driven, or image-bearing lists. A plain `VStack` is acceptable for short, fixed content (roughly < 30 rows, no images) — note the choice in the plan.
+
+### Localization
+- **All user-facing strings must be localizable**: use `Text("literal")`/`LocalizedStringKey`, `String(localized:)`, and a String Catalog (`Localizable.xcstrings`) — no hardcoded display strings built by concatenation; use interpolation/plural variations.
+- Format dates, numbers, and units with locale-aware formatters (`FormatStyle`, `Measurement`); never hand-format.
+- Use leading/trailing (not left/right) alignment and padding so right-to-left layouts work; verify long strings do not truncate.
+- Add accessibility labels as localized strings too.
+- Provide `.xcstrings` entries for every language required by the Localization input (default: development language only).
 
 ## Other coding guideline
 
@@ -126,14 +149,41 @@ Log as much as possible with appropriate context. Guidelines:
 
 ## Workflow
 
-Use a simple agentic loop to create a frontend component, following the loop below.
+Use a simple agentic loop to create a frontend component, following the steps below in order.
+
+### 0. Prerequisites
+
+Before starting step 1, make sure a User experience (UX) design specification (0.1), an architecture and design pattern (0.2), and a buildable project (0.3) are available. Do not continue until all exist.
+
+#### 0.1 Design specification
+
+1. Look for a repo-specific design specification or design system (e.g., `DESIGN.md`, `docs/design*`, a design-system/theme module, a Figma link in the README, or an existing `{root}/.design/*_design_specification.md`). **Repo-specific design specifications always take precedence** over this skill's template and defaults. If several exist, ask the user which one is authoritative.
+2. If one exists, read it and use it for all design decisions. Flag gaps or stale sections to the user, and fill gaps only in `{root}/.design/{project_name}_design_specification.md` without contradicting the repo-specific source.
+3. If none exists, create one:
+   - Derive `{project_name}` from the workspace/repo name, or ask the user for a name.
+   - Follow [`references/design_specification_template.md`](references/design_specification_template.md). Extract details from the repo first (asset catalogs, theme files, existing views), then ask the user only for what is missing.
+   - Get user approval, then save it as `{root}/.design/{project_name}_design_specification.md`.
+
+#### 0.2 Architecture and design pattern
+
+1. Look for a repo-specific architecture or pattern document (e.g., `ARCHITECTURE.md`, `docs/architecture*`) or `{root}/.agentic_coding/design_and_architecture_patterns.md`. **Repo-specific documents take precedence.** If a pattern is documented, reuse it and skip the remaining sub-steps.
+2. If none exists, inspect the codebase to identify the pattern it already follows (e.g., MVVM, TCA, Coordinator, Repository).
+3. Use [`references/design_and_architecture_patterns_guid.md`](references/design_and_architecture_patterns_guid.md) to document the detected pattern, or to select one for a new or unstructured codebase.
+4. Review with the user, get approval, then save it as `{root}/.agentic_coding/design_and_architecture_patterns.md`.
+
+#### 0.3 Project structure (fallback only)
+
+The skill creates components and views, not repository structure.
+1. Resolve `{root}` and look for an existing Xcode project, workspace, Swift package, or `project.yml`. If one exists, use it as-is and add new files to its sources; never overwrite it.
+2. If none exists, tell the user and ask for approval to scaffold a minimal project with [`references/project_template.yml`](references/project_template.yml) (XcodeGen, MIT license; ask before installing it). Fill in `{project_name}`, `{bundle_prefix}`, `{ios_version}`, save as `{root}/project.yml`, then run `xcodegen generate`.
+3. If the user declines, ask which build setup to use instead.
 
 ### 1. Input Processing
 
 1. Validate inputs (see Inputs validation above).
 2. If anything is unclear, ask the user for clarification and re-validate.
-3. Once inputs are clear, finalize scope and get user approval.
-4. Save as `{component_name}_intent.md`. Identify or generate the component name from the input. If file already exists then append change intension to file with timestamp and other details.
+3. Once inputs are clear, finalize the scope.
+4. Save as `{component_name}_intent.md`. Identify or generate the component name from the input. If the file already exists, append the change intent to the file with timestamp and other details.
 
 ### 2. Plan
 
@@ -142,20 +192,61 @@ In the plan phase, perform the following actions sequentially:
 - Search the repo for similar components, reusable components and coding standards.
 - Plan the component per the repo coding standard.
 - Ask user for clarification and go back to the previous step if needed.
-- Get approval from user.
-- Create and save as `{component_name}_plan.md`. Like `{component_name}_intent.md`, if file already exists then append change plan to file with timestamp and other details.
+- Create and save as `{component_name}_plan.md`. Like `{component_name}_intent.md`, if the file already exists, append the change plan to the file with timestamp and other details.
 
-### 3. Generate Code and test
+### 3. Review and Approval (mandatory gate)
 
-- Use design skills and available design templates within the repo to design the component. Review design with user and get approval.
-- Generate view or views. All views should be visible in Xcode playground.
-- Update view as per user feedback.
-- View should be testable independently.
-- Run `swiftlint` or any workspace/repo specific linter to check and fix lint errors.
-- Compile file, check and fix errors.
-- Build the entire project target to verify the inclusion of the files in the target.
+Stop and ask the user to review the intent and plan before generating any code (see Approval policy).
+
+- Apply any requested changes to the intent and plan documents, then ask for review again.
+- Proceed to step 4 only after explicit user approval.
+- Record the approval in `{component_name}_plan.md`.
+
+### 4. Design
+
+Design the component before writing code, based on the project design specification (step 0) and any design templates in the repo. Cover the following items:
+
+- **Layout and structure**: view hierarchy, spacing, alignment, and adaptive behavior across device sizes, orientations, and Dynamic Type sizes.
+- **Design tokens**: colors, typography, spacing, corner radii, and icons from the design specification. Do not hardcode values.
+- **States**: default, loading, empty, error, disabled, selected, and pressed/focused.
+- **Interactions**: gestures, transitions, animations, haptics, and navigation. Respect Reduce Motion.
+- **Appearance**: light/dark mode and localization, including right-to-left layouts and long strings.
+- **Accessibility**: VoiceOver labels, traits and reading order, focus order, minimum touch targets (44x44 pt), and WCAG AA contrast.
+- **Component API**: inputs, outputs/callbacks, and bindings, aligned with the chosen architecture pattern.
+- **Reuse**: existing components to reuse and new ones to extract.
+
+Then generate a static HTML prototype and get approval:
+
+1. Save it as `{root}/.design/{component_name}_design.html`. If the file already exists, update it and keep the previous version's changes noted in an HTML comment with timestamp.
+2. Make it a single self-contained file (inline CSS, no external dependencies, no JavaScript beyond simple state toggles) with CSS variables derived from the design specification tokens.
+3. Show every state from the list above (for example, as labeled sections or a state switcher), in both light and dark mode, inside a typical device frame.
+4. Add semantic HTML and ARIA labels that mirror the planned VoiceOver labels.
+5. Open and visually verify the prototype yourself (browser or screenshot) before presenting it. Then give the user a clickable link in the chat — a Markdown link to the file's path (e.g., `[BiryaniRecipe_design.html](.design/BiryaniRecipe_design.html)`) plus the absolute `file://` URL — so they can open it in the VS Code browser or an external browser. Ask for review, apply requested changes, and re-present.
+6. Proceed to step 5 only after explicit user approval, and record the approval in `{component_name}_plan.md`.
+
+### 5. Generate Code and Test
+
+- Generate the view or views. All views must be previewable in Xcode Previews/Playgrounds.
+- Update the views per user feedback.
+- Make each view independently testable.
+- Run `swiftlint` or any workspace/repo-specific linter, and fix lint errors.
+- Compile the files and fix errors.
+- Build the entire project target to verify the files are included in the target.
 - Generate unit tests using the Swift Testing framework.
-- Mock data and integration layer for testing.
-- Generate XCUITest for the view.
-- Run tests via Xcode MCP or `xcrun` CLI.
+- Mock data and the integration layer for testing.
+- Generate XCUITests for the view.
+- Run tests via Xcode MCP or the CLI. Never hardcode a simulator name; pick one from `xcrun simctl list devices available`:
+  1. `xcodegen generate` (only if the project is XcodeGen-based)
+  2. `xcodebuild build-for-testing -project {project}.xcodeproj -scheme {scheme} -destination 'platform=iOS Simulator,id={UDID}'`
+  3. `xcodebuild test-without-building` with the same destination
+- Swift 6: mark XCUITest classes `@MainActor`; give interactive elements `accessibilityIdentifier`s. UI tests are slow — keep them to critical flows.
 - Make sure there are no build or runtime errors.
+
+### 6. Reporting
+
+Generate a brief report of the whole task and save it as `{component_name}_report.md`. If the file already exists, append the change report with a timestamp and other details. The report must include:
+
+- Summary of the task
+- Summary of the generated code and test files
+- Summary of the test results
+- Summary of the user feedback and changes made

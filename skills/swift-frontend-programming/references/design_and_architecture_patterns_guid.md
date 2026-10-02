@@ -1,7 +1,7 @@
 # Design and architecture pattern guideline
 
 Used when `{root}/.agentic_coding/design_and_architecture_patterns.md` does not yet exist for a
-project (see `SKILL.md` → "Architecture and Design Patterns"). Inspect the existing codebase
+project (see `SKILL.md` → "Workflow" → "0.2 Architecture and design pattern"). Inspect the existing codebase
 first — if it already follows a recognizable pattern, document *that* one rather than introducing
 a new one. Only pick fresh from the catalog below for a new project or an unstructured codebase,
 and always get user approval before writing the final doc.
@@ -24,7 +24,7 @@ and always get user approval before writing the final doc.
 ## Catalog of patterns for iOS/macOS
 
 ### MV (Model-View, Apple-native)
-View binds directly to an `@Observable` model; no separate ViewModel layer.
+View binds directly to an `@Observable` model; no separate ViewModel layer (the SwiftUI view itself plays the ViewModel role).
 - **Best for**: small apps, single-screen features, prototypes, screens with only local/derived
   state and thin logic.
 - **Trade-offs**: logic tends to leak into the View as the screen grows; less testable in
