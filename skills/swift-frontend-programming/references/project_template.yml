@@ -1,0 +1,51 @@
+# Minimal XcodeGen spec — fallback ONLY when no Xcode project/package exists at {root}
+# (no *.xcodeproj, *.xcworkspace, Package.swift or project.yml). See SKILL.md → 0.3.
+#
+# Save as {root}/project.yml, replace the {placeholders}, then run:  xcodegen generate
+# Requires XcodeGen (MIT license): `brew install xcodegen` — get user approval before installing.
+# Never overwrite an existing project.yml; add new Swift files under the existing sources path instead.
+#
+# Placeholders:
+#   {project_name}  e.g. RecipeBlog        {ios_version}  e.g. "17.0"
+#   {bundle_prefix} e.g. com.example       Sources live in {project_name}/Sources (any folder works; files are picked up by glob,
+#                                          including Localizable.xcstrings and bundled .json resources)
+# Also add a .swiftlint.yml at {root} (included: app + test folders, excluded: build) so lint runs on the generated code.
+
+name: {project_name}
+options:
+  bundleIdPrefix: {bundle_prefix}
+  developmentLanguage: en                    # String Catalog source language (see Localization guardrail)
+  deploymentTarget:
+    iOS: "{ios_version}"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES     # "no compiler warnings tolerated" (Testing & CI guardrail)
+targets:
+  {project_name}:
+    type: application
+    platform: iOS
+    sources: [{project_name}/Sources]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: {project_name}   # optional: user-facing app name
+  {project_name}Tests:                       # Swift Testing / XCTest unit tests
+    type: bundle.unit-test
+    platform: iOS
+    sources: [{project_name}Tests]
+    dependencies: [{target: {project_name}}]
+    settings:
+      base: {GENERATE_INFOPLIST_FILE: YES}
+  {project_name}UITests:                     # XCUITest
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [{project_name}UITests]
+    dependencies: [{target: {project_name}}]
+    settings:
+      base: {GENERATE_INFOPLIST_FILE: YES}
+schemes:
+  {project_name}:
+    build: {targets: {{project_name}: all}}
+    test: {targets: [{project_name}Tests, {project_name}UITests]}
