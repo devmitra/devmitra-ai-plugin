@@ -1,8 +1,8 @@
 {
   "name": "devmitra-ai-plugin",
   "displayName": "DevMitra AI Plugin",
-  "description": "DevMitra AI plugin: programmer guideline skills for AI coding agents, starting with Swift/iOS frontend development.",
-  "version": "0.1.0",
+  "description": "DevMitra AI plugin: programmer guideline skills for AI coding agents, starting with a frontend development planner, Swift/iOS frontend development, and a feature preview kit for design-system bases and clickable previews.",
+  "version": "0.4.0",
   "author": {
     "name": "Pushan Mitra",
     "email": "mitra.pushan@gmail.com"
@@ -14,6 +14,9 @@
     "coding-guidelines",
     "coding-standards",
     "skills",
+    "planning",
+    "prototyping",
+    "architecture",
     "swift",
     "ios"
   ]

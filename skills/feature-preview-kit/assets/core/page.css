@@ -1,0 +1,77 @@
+html, body { min-height: 100%; }
+.fpk-top { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); padding: var(--space-3) var(--space-5); background: var(--surface); border-bottom: 1px solid var(--border); }
+.fpk-brand { display: flex; align-items: center; gap: var(--space-3); min-width: 0; flex: 1 1 260px; }
+.fpk-mark { width: 30px; height: 30px; flex: none; }
+.fpk-mark .a { fill: var(--primary); } .fpk-mark .b { fill: var(--secondary); }
+.fpk-brand small { display: block; font: 600 11px/14px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted); }
+.fpk-brand strong { display: block; font: 600 16px/20px var(--font-sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fpk-nav { flex: 0 1 auto; min-width: 0; overflow-x: auto; }
+.fpk-title-row { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.fpk-title-row .fp-badge { height: 20px; font-size: 11px; padding: 0 8px; flex: none; }
+.fpk-dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--space-2) var(--space-4); margin: 0; font: 400 14px/20px var(--font-sans); }
+.fpk-dl dt { color: var(--ink-muted); } .fpk-dl dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.fpk-nav .fp-tab { flex: none; }
+.fpk-actions { display: flex; align-items: center; gap: var(--space-2); }
+.fpk-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-5); border-bottom: 1px solid var(--border); background: var(--bg); }
+.fpk-toolbar .fp-input { height: 34px; width: auto; min-width: 140px; font-size: 13px; background-position: calc(100% - 18px) 14px, calc(100% - 13px) 14px; }
+.fpk-chip { height: 32px; padding: 0 var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--surface); color: var(--ink); font: 600 13px/1 var(--font-sans); cursor: pointer; }
+.fpk-chip[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+.fpk-chip:focus-visible, .fpk-iconbtn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus); }
+.fpk-iconbtn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: 600 13px/1 var(--font-sans); cursor: pointer; }
+.fpk-iconbtn .fp-icon { width: 16px; height: 16px; }
+.fpk-group { display: flex; align-items: center; gap: var(--space-2); }
+.fpk-group > span { font: 600 12px/1 var(--font-sans); color: var(--ink-muted); }
+.fpk-sep { width: 1px; height: 24px; background: var(--border); }
+.fpk-stage { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: var(--space-6); padding: var(--space-6) var(--space-5) var(--space-7); }
+.fpk-card { display: flex; flex-direction: column; gap: var(--space-3); }
+.fpk-card .fp-fit { overflow: visible; }
+.fpk-stage { overflow-x: clip; }
+.fpk-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.fpk-card-head strong { font: 600 14px/18px var(--font-sans); }
+.fpk-card-head span { display: block; font: 400 12px/16px var(--font-sans); color: var(--ink-muted); }
+.fpk-card-head .fpk-iconbtn { height: 28px; padding: 0 var(--space-2); font-size: 12px; }
+.fpk-panel { padding: var(--space-6) var(--space-5) var(--space-7); max-width: 1200px; margin: 0 auto; }
+.fpk-section { margin-bottom: var(--space-7); }
+.fpk-section > h2 { margin: 0 0 var(--space-1); font: 600 22px/28px var(--font-sans); }
+.fpk-section > p { margin: 0 0 var(--space-4); color: var(--ink-muted); font: 400 14px/20px var(--font-sans); max-width: 70ch; }
+.fpk-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+.fpk-swatch { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); }
+.fpk-swatch i { display: block; height: 56px; border-bottom: 1px solid var(--border); }
+.fpk-swatch div { padding: var(--space-2) var(--space-3); }
+.fpk-swatch b { display: block; font: 600 13px/18px var(--font-sans); }
+.fpk-swatch code { font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+.fpk-typerow { display: grid; grid-template-columns: 140px 1fr; gap: var(--space-4); align-items: baseline; padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.fpk-typerow code { font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+.fpk-scale { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-end; }
+.fpk-scale div { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+.fpk-scale i { display: block; background: var(--primary); }
+.fpk-demo { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-start; padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.fpk-demo + .fpk-demo { margin-top: var(--space-3); }
+.fpk-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--space-2); }
+.fpk-icons div { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); font: 400 11px/14px var(--font-mono); color: var(--ink-muted); }
+.fpk-icons svg { width: 24px; height: 24px; color: var(--ink); }
+.fpk-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--space-5); align-items: start; }
+.fpk-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); min-width: 0; }
+.fpk-box h3 { margin: 0 0 var(--space-3); font: 600 15px/20px var(--font-sans); display: flex; align-items: center; gap: var(--space-2); }
+.fpk-pre { margin: 0; padding: var(--space-3); max-height: 320px; overflow: auto; background: var(--surface-2); border-radius: var(--radius-sm); font: 400 12px/18px var(--font-mono); white-space: pre-wrap; word-break: break-word; }
+.fpk-code { width: 100%; min-height: 280px; padding: var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: 400 12px/18px var(--font-mono); resize: vertical; tab-size: 2; }
+.fpk-kv { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-3); font: 400 13px/20px var(--font-sans); margin-bottom: var(--space-3); }
+.fpk-kv dt { color: var(--ink-muted); } .fpk-kv dd { margin: 0; font-family: var(--font-mono); font-size: 12px; }
+.fpk-log { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow: auto; font: 400 12px/18px var(--font-mono); }
+.fpk-log li { padding: 4px 0; border-top: 1px solid var(--border); display: flex; gap: var(--space-2); }
+.fpk-log li:first-child { border-top: 0; }
+.fpk-log time { color: var(--ink-muted); flex: none; }
+.fpk-log .w { color: var(--warning); } .fpk-log .e { color: var(--danger); }
+.fpk-issues { margin: var(--space-3) 0 0; padding-left: var(--space-5); font: 400 13px/20px var(--font-sans); }
+.fpk-table { width: 100%; border-collapse: collapse; font: 400 13px/20px var(--font-sans); }
+.fpk-table th, .fpk-table td { text-align: left; vertical-align: top; padding: var(--space-2) var(--space-3); border-top: 1px solid var(--border); }
+.fpk-table th { font-weight: 600; color: var(--ink-muted); border-top: 0; }
+.fpk-table code { font: 400 12px/18px var(--font-mono); }
+.fpk-tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+@media (max-width: 720px) {
+  .fpk-top, .fpk-toolbar { padding-left: var(--space-4); padding-right: var(--space-4); }
+  .fpk-stage { padding: var(--space-5) var(--space-4); gap: var(--space-5); }
+  .fpk-panel { padding: var(--space-5) var(--space-4); }
+  .fpk-typerow { grid-template-columns: 1fr; gap: var(--space-1); }
+  .fpk-sep { display: none; }
+}

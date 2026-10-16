@@ -1,0 +1,19 @@
+---
+description: Design, build, test, and verify isolated iOS/macOS Swift frontend features (a.k.a. components) from an approved plan (SwiftUI/UIKit, Swift Testing, XCTest, XCUITest).
+globs: **/*.swift
+alwaysApply: false
+---
+
+# Swift Frontend Programming
+
+Follow `skills/swift-frontend-programming/SKILL.md` exactly; it is the source of truth. Contract: `skills/swift-frontend-programming/references/change_artifacts.md`; templates: `skills/swift-frontend-programming/references/artifact_templates.md`.
+
+- **Hard gate**: work only on a change whose `status.md` has `stack: swift` and `phase_plan: approved` for the plan's latest revision, with a valid intent and complete plan. Otherwise stop and run `frontend-development-planner`.
+- Start from `{root}/.agentic_coding/index.md` (OKF bundle) and read the change's `status.md`, `intent.md`, `plan.md`, `design.md`, the architecture document, and the UX spec.
+- Sources of truth: approved intent > plan > design. Never edit `intent.md`/`plan.md`. Conflicting input → revert: `Reverts` row, `phase_plan: reverted`, `next: Plan`, stop.
+- Steps: 1 session gate → 2 testable project setup (D1) → 3 design: feature-preview-kit Phase B preview on the locked base, never editing the base (D2) → 4 development with per-work-item progress in `status.md` → 5 user verification on a simulator or Mac window, remarks recorded (D3) → 6 `report.md` handoff and baseline update.
+- Isolation: every dependency is a protocol with a live implementation and a mock, injected; a `#Preview` per planned state; UI tests launch the feature alone via the plan's harness.
+- Failures: record them in `status.md` → `Failures and blockers`; never skip tests or suppress warnings; after three attempts or when user action is needed, set `phase_dev: blocked` and stop.
+- Guardrails: no force-unwraps/force-casts, `@MainActor` UI, Swift 6 concurrency, typed errors, private-by-default OSLog, Keychain for secrets, ATS, privacy manifest and usage descriptions, String Catalog localization, VoiceOver/Dynamic Type/44 pt targets/WCAG AA/Reduce Motion/keyboard focus, `performAccessibilityAudit()` per new view, SwiftLint, zero warnings.
+- Never hardcode a simulator name; pick one from `xcrun simctl list devices available`.
+- Never invent URLs, IDs, endpoints, or package names; never put secrets or personal data in code, fixtures, screenshots, logs, or artifacts.

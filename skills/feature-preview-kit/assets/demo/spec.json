@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "name": "Tasks (demo)",
+    "description": "Reference feature: filtered task list, task detail, new-task form, delete confirm and settings.",
+    "baseUrl": "app.example.com",
+    "version": "1.0.0",
+    "demo": true
+  },
+  "state": {
+    "filter": "all",
+    "tasks": [
+      { "id": 1, "title": "Draft launch checklist", "due": "Today", "priority": "High", "done": false },
+      { "id": 2, "title": "Review pricing page copy", "due": "Tomorrow", "priority": "Normal", "done": false },
+      { "id": 3, "title": "Book usability sessions", "due": "Next week", "priority": "Normal", "done": true },
+      { "id": 4, "title": "Export Q3 metrics", "due": "Today", "priority": "Low", "done": false }
+    ],
+    "visible": [],
+    "openCount": 0,
+    "nextId": 5,
+    "selectedId": null,
+    "selected": null,
+    "draft": { "title": "", "due": "Today", "high": false },
+    "settings": { "reminders": true, "hideDone": false, "defaultPriority": "Normal" }
+  },
+  "tabBar": {
+    "items": [
+      { "view": "tasks", "label": "Tasks", "icon": "check-circle" },
+      { "view": "settings", "label": "Settings", "icon": "settings" }
+    ]
+  },
+  "actions": {
+    "createTask": [
+      { "validate": { "draft.title": ["required", "minLength:3|Give the task a title of at least 3 characters."] } },
+      { "push": { "path": "tasks", "value": { "id": "{{nextId}}", "title": "{{draft.title}}", "due": "{{draft.due}}", "priority": "Normal", "done": false } } },
+      { "run": "applyPriority" },
+      { "increment": "nextId" },
+      { "set": { "draft.title": "", "draft.high": false } },
+      { "close": true },
+      { "run": "applyFilter" },
+      { "toast": "Task added" }
+    ],
+    "deleteTask": [
+      { "remove": { "path": "tasks", "where": { "id": "{{selectedId}}" } } },
+      { "close": true },
+      { "back": true },
+      { "run": "applyFilter" },
+      { "toast": "Task deleted" }
+    ],
+    "saveSettings": [
+      { "run": "applyFilter" },
+      { "toast": "Settings saved" }
+    ]
+  }
+}

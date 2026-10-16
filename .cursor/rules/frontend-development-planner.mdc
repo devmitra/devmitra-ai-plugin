@@ -1,0 +1,19 @@
+---
+description: Plan a frontend feature (a.k.a. component), change, or bugfix (any stack) before code is written — intent, plan, UX spec, architecture pattern. Use when asked to plan, scope, or structure frontend work, or when a programming skill reverts a change to planning.
+alwaysApply: false
+---
+
+# Frontend Development Planner
+
+Follow `skills/frontend-development-planner/SKILL.md` exactly; it is the source of truth. Contract: `skills/frontend-development-planner/references/change_artifacts.md`; templates: `skills/frontend-development-planner/references/artifact_templates.md`; stack guides: `skills/frontend-development-planner/references/stacks/`.
+
+- Never write source code, prototypes, or tests.
+- `{root}/.agentic_coding/` is an OKF v0.2 knowledge bundle: start from its `index.md`; keep `index.md`/`log.md` current in the same step that changes a document.
+- Derive the stack, project name, and inputs from the repo and task context, recording each input's source; ask only for what is missing. Propose a component name for approval when none is given.
+- Steps: 1 prerequisites (UX spec + locked design-system base via feature-preview-kit Phase A, architecture) → 2 inputs and intent → 3 existing work → 4 plan (feature model with state kind/owner/mutability/reactivity; design, technical, and test spec; work items; conformance checklist) → 5 review and approval.
+- The planner alone writes `intent.md` and `plan.md`; every edit adds a `Change tracker` row. Phase state and approvals live in `status.md`.
+- Gates P1–P4 need explicit approval unless the user says to proceed without asking; if the user can't be asked, record a pending `Approvals` row and stop.
+- Lite track only for small changes/bugfixes meeting the contract's lite conditions, with user approval.
+- On a revert or re-plan, add each trigger to `plan.md` → `Open questions` and resolve them all before editing the plan.
+- Plan for isolation (injected, mockable dependencies), security and privacy, accessibility, localization, and the architecture's conformance rules; never silently deviate from the pattern.
+- Never invent URLs, IDs, endpoints, or package names; never write secrets or personal data into artifacts.

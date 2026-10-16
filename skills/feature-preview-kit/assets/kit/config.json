@@ -1,0 +1,75 @@
+{
+  "base": {
+    "name": "Untitled Design System",
+    "version": "0.1.0",
+    "status": "draft",
+    "sources": [],
+    "notes": "Fill from the repo's design sources (Phase A), then lock."
+  },
+  "brand": {
+    "product": "Acme",
+    "logo": ""
+  },
+  "devices": [
+    {
+      "id": "ios",
+      "kind": "ios",
+      "label": "iPhone",
+      "model": "iPhone 15",
+      "width": 393,
+      "height": 852
+    },
+    {
+      "id": "android",
+      "kind": "android",
+      "label": "Android",
+      "model": "Pixel 8",
+      "width": 412,
+      "height": 915
+    },
+    {
+      "id": "tablet",
+      "kind": "tablet",
+      "label": "Tablet",
+      "model": "iPad",
+      "width": 820,
+      "height": 1180,
+      "rotatable": true
+    },
+    {
+      "id": "web",
+      "kind": "web",
+      "label": "Web",
+      "model": "Desktop",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "shell": {
+    "appBarAlign": {
+      "ios": "center",
+      "android": "leading",
+      "tablet": "center",
+      "web": "leading"
+    },
+    "nav": {
+      "phone": "bottom",
+      "tablet": "bottom",
+      "web": "top"
+    },
+    "tabBarLabels": true,
+    "overlay": {
+      "phone": "sheet",
+      "wide": "dialog"
+    },
+    "statusBarTime": "9:41"
+  },
+  "styleGuide": {
+    "principles": [
+      "One primary action per view.",
+      "Tokens only: no raw colours, spacing or fonts in features.",
+      "Text meets 4.5:1 contrast in both themes."
+    ],
+    "sections": []
+  }
+}

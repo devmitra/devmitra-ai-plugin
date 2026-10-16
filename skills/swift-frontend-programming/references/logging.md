@@ -1,24 +1,31 @@
-# Logger implementation tips
+# Logging reference
 
-Prefer, in this order: (1) the logging framework the repo already uses, (2) the minimal OSLog wrapper below, (3) [swift-log](https://github.com/apple/swift-log) / [Pulse](https://github.com/kean/Pulse) when the app needs pluggable backends, file export or a log viewer.
+Minimal, Swift 6-clean OSLog facade (`Log`) with four levels, per-level toggles and private-by-default messages.
 
-## Log levels
-Minimum four levels: **Error**, **Warning**, **Info**, **Debug**. Every entry carries file, line and function (via `#file`/`#line`/`#function`); the system adds the timestamp.
+## Index
+- [Choosing a logger](#choosing-a-logger) — what to prefer
+- [Levels](#levels) — Error/Warning/Info/Debug semantics
+- [Rules](#rules) — facade, privacy, config
+- [Implementation](#implementation) — `Log.swift` + usage
+- [Testing](#testing) · [Optional backends](#optional-backends)
 
-- **Error**: error details + app state that may have caused it.
+## Choosing a logger
+Prefer, in order: (1) the framework the repo already uses, (2) the wrapper below, (3) [swift-log](https://github.com/apple/swift-log) / [Pulse](https://github.com/kean/Pulse) for pluggable backends, file export or a log viewer.
+
+## Levels
+Every entry carries file, line, function; the system adds the timestamp.
+- **Error**: details + app state that may have caused it.
 - **Warning**: unexpected behavior or input.
-- **Info**: major events/checkpoints, usable for analytics and journey timelines.
-- **Debug**: debugging only — OSLog does not persist debug messages, and the wrapper below compiles them out of release builds.
+- **Info**: major events/checkpoints (analytics, journey timelines).
+- **Debug**: debugging only; not persisted by OSLog and compiled out of release builds.
 
-## Implementation guideline
+## Rules
+- Call sites use the `Log` facade, never `os.Logger` directly.
+- Synchronous, non-throwing, no mutable statics or actors. Immutable config read once from `LOG_LEVELS=error,warning,info,debug`.
+- Messages are `.private` by default; pass `isPublic: true` only for non-sensitive text. Never log secrets, tokens or PII, even as private.
+- Log errors with `String(describing: error)`, not just `localizedDescription`.
 
-- Wrap `os.Logger` in an app-level facade (`Log`) so call sites never touch OSLog directly.
-- Synchronous, non-throwing, Swift 6 clean: no mutable statics, no actors needed. Configuration is immutable, read once from the environment (`LOG_LEVELS=error,warning,info,debug`) for per-level enable/disable.
-- Privacy: message text is logged as `.private` by default (redacted outside a debugger/dev device). Pass `isPublic: true` only for non-sensitive text. Never log secrets, tokens, or PII even as private.
-- Log errors with full detail (`String(describing: error)`), not just `localizedDescription`.
-- Variable-length items are accepted and stringified before logging.
-
-## Example (minimal OSLog logger)
+## Implementation
 
 ```swift
 // File: Log.swift
@@ -27,6 +34,15 @@ import os
 
 enum LogLevel: String, CaseIterable, Sendable {
     case error, warning, info, debug
+
+    var osType: OSLogType {
+        switch self {
+        case .error: .error
+        case .warning: .default
+        case .info: .info
+        case .debug: .debug
+        }
+    }
 }
 
 enum Log {
@@ -45,39 +61,31 @@ enum Log {
     }()
 
     static func error(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
-        write(.error, items, isPublic, location(file, line, function))
+        write(.error, items, isPublic, file, line, function)
     }
 
     static func warning(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
-        write(.warning, items, isPublic, location(file, line, function))
+        write(.warning, items, isPublic, file, line, function)
     }
 
     static func info(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
-        write(.info, items, isPublic, location(file, line, function))
+        write(.info, items, isPublic, file, line, function)
     }
 
     static func debug(_ items: Any..., isPublic: Bool = false, file: String = #file, line: Int = #line, function: String = #function) {
         #if DEBUG
-        write(.debug, items, isPublic, location(file, line, function))
+        write(.debug, items, isPublic, file, line, function)
         #endif
     }
 
-    private static func location(_ file: String, _ line: Int, _ function: String) -> String {
-        "\((file as NSString).lastPathComponent):\(line) \(function)"
-    }
-
-    private static func write(_ level: LogLevel, _ items: [Any], _ isPublic: Bool, _ location: String) {
+    private static func write(_ level: LogLevel, _ items: [Any], _ isPublic: Bool, _ file: String, _ line: Int, _ function: String) {
         guard enabledLevels.contains(level) else { return }
         let text = items.map { "\($0)" }.joined(separator: " ")
-        switch (level, isPublic) {
-        case (.error, true): logger.error("\(text, privacy: .public) [\(location, privacy: .public)]")
-        case (.error, false): logger.error("\(text, privacy: .private) [\(location, privacy: .public)]")
-        case (.warning, true): logger.warning("\(text, privacy: .public) [\(location, privacy: .public)]")
-        case (.warning, false): logger.warning("\(text, privacy: .private) [\(location, privacy: .public)]")
-        case (.info, true): logger.info("\(text, privacy: .public) [\(location, privacy: .public)]")
-        case (.info, false): logger.info("\(text, privacy: .private) [\(location, privacy: .public)]")
-        case (.debug, true): logger.debug("\(text, privacy: .public) [\(location, privacy: .public)]")
-        case (.debug, false): logger.debug("\(text, privacy: .private) [\(location, privacy: .public)]")
+        let location = "\((file as NSString).lastPathComponent):\(line) \(function)"
+        if isPublic {
+            logger.log(level: level.osType, "\(text, privacy: .public) [\(location, privacy: .public)]")
+        } else {
+            logger.log(level: level.osType, "\(text, privacy: .private) [\(location, privacy: .public)]")
         }
     }
 }
@@ -85,9 +93,8 @@ enum Log {
 
 Usage: `Log.info("Checklist toggled", id)` · `Log.error("Load failed:", String(describing: error))` · `Log.info("Order placed", orderID, isPublic: true)`.
 
-## Testing the logger
-`enabledLevels` is immutable, so test the pure decision logic by extracting `LogLevel` parsing, or run the unit tests with `LOG_LEVELS` set in the scheme's test environment. Do not add mutable global state just for tests.
+## Testing
+`enabledLevels` is immutable: test pure `LogLevel` parsing, or set `LOG_LEVELS` in the scheme's test environment. Don't add mutable global state for tests.
 
-## Optional backends (only if required)
-- File-based logs in the app sandbox (rotating text or CSV) via a custom sink, or export from `OSLogStore` for in-app log sharing.
-- Crash/analytics integration (Crashlytics, Firebase Analytics) forwarded from `Log.error`/`Log.info` — mask data before forwarding.
+## Optional backends
+Only if required: file logs in the sandbox (custom sink or `OSLogStore` export); crash/analytics forwarding (Crashlytics, Firebase) from `Log.error`/`Log.info` with data masked.
