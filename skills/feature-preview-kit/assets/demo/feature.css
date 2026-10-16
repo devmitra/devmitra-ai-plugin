@@ -1,0 +1,5 @@
+/* Tasks demo — feature-only styles, tokens only */
+.tasks-check { background: var(--surface-2); color: var(--border-strong); }
+.tasks-check svg { width: 18px; height: 18px; }
+.tasks-check.is-done { background: var(--success-soft); color: var(--success); }
+.tasks-done { color: var(--ink-muted); text-decoration: line-through; }

@@ -1,0 +1,72 @@
+<!-- Tasks demo: reference feature that exercises every kit mechanism (nav items, list → detail, filters,
+     overlay form with validation, destructive confirm, empty state, handlers, data-fp-only). -->
+<template data-fpk-view="tasks" data-title="Tasks" data-route="/tasks" data-layout="narrow" data-back="false" data-onenter="applyFilter"
+          data-actions='[{"icon":"plus","label":"New task","overlay":"newTask"}]'>
+  <div class="fp-tabs" role="tablist">
+    <button class="fp-tab" role="tab" type="button" aria-selected="{{filter == 'all'}}" data-fp-set="filter='all'" data-fp-action="applyFilter">All</button>
+    <button class="fp-tab" role="tab" type="button" aria-selected="{{filter == 'open'}}" data-fp-set="filter='open'" data-fp-action="applyFilter">Open · {{openCount}}</button>
+    <button class="fp-tab" role="tab" type="button" aria-selected="{{filter == 'done'}}" data-fp-set="filter='done'" data-fp-action="applyFilter">Done</button>
+  </div>
+  <ul class="fp-list" data-fp-if="visible" data-fp-each="visible as item">
+    <li><button class="fp-list-item" type="button" data-fp-set="selectedId={{item.id}}" data-fp-nav="detail">
+      <span class="fp-avatar tasks-check" data-fp-class="is-done: item.done"><i data-fp-icon="check"></i></span>
+      <span class="fp-list-text"><span class="fp-list-title" data-fp-class="tasks-done: item.done">{{item.title}}</span><span class="fp-list-sub">Due {{item.due}}</span></span>
+      <span class="fp-badge fp-badge-warning" data-fp-if="item.priority == 'High'">High</span>
+      <i data-fp-icon="chev" class="fp-chevron"></i>
+    </button></li>
+  </ul>
+  <div class="fp-alert" data-fp-if="!visible"><i data-fp-icon="info"></i><div><strong>Nothing here</strong>No {{filter}} tasks. Create one with the + button.</div></div>
+  <p class="text-caption fp-muted fp-h" data-fp-only="wide">Tip: on wide screens this list sits in a narrow column; tap a task to open it.</p>
+</template>
+
+<template data-fpk-view="detail" data-title="{{selected.title}}" data-route="/tasks/{{selectedId}}" data-back="auto" data-onenter="loadSelected"
+          data-actions='[{"icon":"trash","label":"Delete task","overlay":"confirmDelete"}]'>
+  <div class="fp-row">
+    <span class="fp-badge fp-badge-success" data-fp-if="selected.done">Done</span>
+    <span class="fp-badge fp-badge-primary" data-fp-if="!selected.done">Open</span>
+    <span class="fp-badge" data-fp-class="fp-badge-warning: selected.priority == 'High'">{{selected.priority}} priority</span>
+  </div>
+  <h2 class="text-h2 fp-h">{{selected.title}}</h2>
+  <p class="text-body fp-muted fp-h">Due {{selected.due}}</p>
+  <button class="fp-btn fp-btn-primary fp-btn-block" type="button" data-fp-action="toggleDone">
+    <span data-fp-if="!selected.done">Mark as done</span><span data-fp-if="selected.done">Reopen task</span>
+  </button>
+  <button class="fp-btn fp-btn-danger fp-btn-block" type="button" data-fp-overlay="confirmDelete">Delete task</button>
+</template>
+
+<template data-fpk-view="settings" data-title="Settings" data-route="/settings" data-layout="card" data-back="false">
+  <label class="fp-switch"><input type="checkbox" data-fp-bind="settings.reminders"><span class="fp-switch-track"></span>Due-date reminders</label>
+  <label class="fp-switch"><input type="checkbox" data-fp-bind="settings.hideDone"><span class="fp-switch-track"></span>Hide done tasks in "All"</label>
+  <div class="fp-field">
+    <label class="fp-label" for="defaultPriority">Default priority</label>
+    <select class="fp-input" id="defaultPriority" data-fp-bind="settings.defaultPriority"><option>Low</option><option>Normal</option><option>High</option></select>
+  </div>
+  <button class="fp-btn fp-btn-primary fp-btn-block" type="button" data-fp-action="saveSettings">Save settings</button>
+</template>
+
+<template data-fpk-overlay="newTask">
+  <h3 class="text-h3 fp-h">New task</h3>
+  <form data-fp-submit="createTask" novalidate>
+    <div class="fp-field">
+      <label class="fp-label" for="taskTitle">Title</label>
+      <input class="fp-input" id="taskTitle" placeholder="What needs doing?" data-fp-bind="draft.title">
+      <span class="fp-help fp-help-error" data-fp-error="draft.title"></span>
+    </div>
+    <div class="fp-field">
+      <label class="fp-label" for="taskDue">Due</label>
+      <select class="fp-input" id="taskDue" data-fp-bind="draft.due"><option>Today</option><option>Tomorrow</option><option>Next week</option></select>
+    </div>
+    <label class="fp-check"><input type="checkbox" data-fp-bind="draft.high"><span>High priority</span></label>
+    <button class="fp-btn fp-btn-primary fp-btn-block" type="submit">Add task</button>
+    <button class="fp-btn fp-btn-tertiary fp-btn-block" type="button" data-fp-close>Cancel</button>
+  </form>
+</template>
+
+<template data-fpk-overlay="confirmDelete" data-type="dialog">
+  <h3 class="text-h3 fp-h">Delete this task?</h3>
+  <p class="text-body fp-muted fp-h">"{{selected.title}}" will be removed. This can't be undone.</p>
+  <div class="fp-dialog-actions">
+    <button class="fp-btn fp-btn-secondary fp-btn-sm" type="button" data-fp-close>Cancel</button>
+    <button class="fp-btn fp-btn-danger fp-btn-sm" type="button" data-fp-action="deleteTask">Delete</button>
+  </div>
+</template>

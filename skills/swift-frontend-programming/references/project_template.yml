@@ -1,15 +1,13 @@
-# Minimal XcodeGen spec — fallback ONLY when no Xcode project/package exists at {root}
-# (no *.xcodeproj, *.xcworkspace, Package.swift or project.yml). See SKILL.md → 0.3.
+# Minimal XcodeGen spec (iOS app + unit + UI test targets). Fallback ONLY when no *.xcodeproj,
+# *.xcworkspace, Package.swift or project.yml exists at {root} (SKILL.md → step 2).
 #
-# Save as {root}/project.yml, replace the {placeholders}, then run:  xcodegen generate
-# Requires XcodeGen (MIT license): `brew install xcodegen` — get user approval before installing.
-# Never overwrite an existing project.yml; add new Swift files under the existing sources path instead.
+# Index: usage (below) · options/settings · targets (app, Tests, UITests) · schemes
 #
-# Placeholders:
-#   {project_name}  e.g. RecipeBlog        {ios_version}  e.g. "17.0"
-#   {bundle_prefix} e.g. com.example       Sources live in {project_name}/Sources (any folder works; files are picked up by glob,
-#                                          including Localizable.xcstrings and bundled .json resources)
-# Also add a .swiftlint.yml at {root} (included: app + test folders, excluded: build) so lint runs on the generated code.
+# Usage: save as {root}/project.yml, fill placeholders, run `xcodegen generate`.
+#   XcodeGen is MIT; `brew install xcodegen` needs user approval. Never overwrite an existing project.yml.
+#   {project_name} e.g. RecipeBlog · {bundle_prefix} e.g. com.example · {ios_version} e.g. "17.0"
+#   Sources: {project_name}/Sources (globbed, incl. Localizable.xcstrings and .json resources).
+#   Also add {root}/.swiftlint.yml (include app + test folders, exclude build).
 
 name: {project_name}
 options:
