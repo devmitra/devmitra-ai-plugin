@@ -1,17 +1,17 @@
 # Swift (iOS / macOS) stack guide
 
-Stack-specific input for the planner: detecting the Swift stack and project name, Swift hints for the UX spec (SKILL.md → "1.1 UX design specification") and for the plan (SKILL.md → "4. Plan"), and picking or documenting an iOS/macOS architecture pattern when `{root}/.agentic_coding/design_and_architecture_patterns.md` doesn't exist yet (SKILL.md → "1.2 Architecture and design pattern").
+Stack-specific input for the planner: detecting the Swift stack and project name, Swift hints for the UX spec (SKILL.md → "1.2 UX design specification and design-system base") and for the plan (SKILL.md → "4. Plan and validation plan"), and picking or documenting an iOS/macOS architecture pattern when `{root}/.agentic_coding/project/architecture.md` doesn't cover it yet (SKILL.md → "1.3 Architecture and design pattern").
 
 ## Index
 - [Detection](#detection) — markers that select this stack
 - [Project name](#project-name) — where to read `{project_name}`
 - [UX spec hints](#ux-spec-hints) — where to extract each template section from
-- [Plan hints](#plan-hints) — naming, state, isolation, accessibility, security idioms
+- [Plan hints](#plan-hints) — naming, state, isolation, testable project, validation, accessibility, security idioms
 - [How to use](#how-to-use) — detect → gather → select → fill → approve
 - [Catalog](#catalog) — MV, MVVM, MVVM-C, TCA, VIPER, Clean Swift, Clean Architecture, MVC
 - [Supporting patterns](#supporting-patterns) — Coordinator, Repository, UseCase, DI
 - [Decision guide](#decision-guide) — signal → pattern, default
-- [Output template](#output-template) — doc to save
+- [Architecture document](#architecture-document) — how to fill `project/architecture.md`
 - [Example skeleton](#example-skeleton-mvvm-c-default) — Swift code
 
 ## Detection
@@ -31,10 +31,12 @@ Fill [`../ux_design_specification_template.md`](../ux_design_specification_templ
 - **Conventions**: `NavigationStack`/`NavigationSplitView`/coordinators; `Localizable.xcstrings`; accessibility baseline = Dynamic Type, VoiceOver, 44x44 pt touch targets.
 
 ## Plan hints
-- **Feature name**: UpperCamelCase noun phrase matching the repo's type names (e.g. `RecipeList`); files are `{feature_name}View.swift`, `{feature_name}ViewModel.swift`, and so on, per the architecture document's file naming.
+- **Feature name**: `{feature_name}` is an UpperCamelCase noun phrase matching the repo's type names (e.g. `RecipeList`); `{feature}` is its kebab-case form (`recipe-list`). Files are `{feature_name}View.swift`, `{feature_name}ViewModel.swift`, and so on, per the architecture document's file naming.
 - **State kinds → Swift**: input = `let` initializer parameter (immutable) or `@Binding` (owned by the parent); internal = `private(set) var` on an `@Observable` view model, or `@State private var` for view-only UI state; output = a closure or `async` callback in the initializer, never a shared mutable object.
 - **Reactivity**: `@Observable` (iOS 17+/macOS 14+) or `ObservableObject` + `@Published` for older targets; `AsyncSequence` for streams; mark UI-mutating types `@MainActor`.
-- **Isolation harness**: each dependency is a protocol with a live type and a mock; `#Preview` blocks per planned state using mocks; UI tests launch the host app with launch arguments (e.g. `-uiFeature {feature_name} -uiState {state}`) that a `#if DEBUG` branch of the composition root maps to the feature with mocks. Plan that branch as a mapping row.
+- **Isolation harness**: each dependency is a protocol with a live type and a mock; `#Preview` blocks per planned state using mocks; UI tests launch the host app with launch arguments (e.g. `-uiFeature {feature_name} -uiState {state}`) that a `#if DEBUG` branch of the composition root maps to the feature with mocks. Plan that branch as a `Module map` row.
+- **Testable project**: the build needs a unit test target, a UI test target, a host app that can show the feature alone, and a scheme that runs the tests. When `{root}` has no Xcode project, workspace, Swift package, or `project.yml`, or one of these is missing, plan it as the first, `enabling` work item (the programming skill scaffolds from its project template and asks for approval, gate F2).
+- **Validation plan**: `unit` cases with Swift Testing; `e2e` cases with XCUITest for the listed critical flows and one `performAccessibilityAudit()` case per new view; `manual` cases name the simulator or Mac window and the harness launch arguments for each state. Commands come from the architecture document's `Commands`.
 - **Accessibility**: `accessibilityLabel`/`Hint`/`Value`, traits, grouping and sort priority, Dynamic Type text styles and `@ScaledMetric`, 44x44 pt targets, Reduce Motion/Transparency, Increase Contrast, Differentiate Without Color, keyboard focus (`@FocusState`, Full Keyboard Access, macOS key view loop), and `performAccessibilityAudit()` in a UI test.
 - **Security and privacy**: Keychain for secrets and tokens; ATS on; `Info.plist` usage descriptions for every permission; `PrivacyInfo.xcprivacy` entries when using required-reason APIs or collecting data; OSLog `privacy: .private` by default.
 
@@ -42,7 +44,7 @@ Fill [`../ux_design_specification_template.md`](../ux_design_specification_templ
 1. **Detect existing signals**: search for `ViewModel`, `Coordinator`, `Reducer`/`Store`, `Presenter`/`Interactor`/`Router`, `Repository`, `UseCase`, or a `Package.swift` with feature modules. If a pattern is already dominant, document *that* one; consistency beats theoretical purity. Pick fresh only for a new or unstructured codebase.
 2. **Gather characteristics**: UI framework, screen count, team size, lifespan, testability needs, state complexity, existing dependencies (TCA, RxSwift).
 3. **Select** via the catalog and decision guide.
-4. **Fill** the output template; save to `{root}/.agentic_coding/design_and_architecture_patterns.md`.
+4. **Write** `{root}/.agentic_coding/project/architecture.md` as [Architecture document](#architecture-document) says.
 5. **Get explicit user approval** before planning against it.
 
 ## Catalog
@@ -77,46 +79,20 @@ Fill [`../ux_design_specification_template.md`](../ux_design_specification_templ
 
 Default: **MVVM + Coordinator + Repository + constructor-based DI.**
 
-## Output template
+## Architecture document
 
-```markdown
-# {App/Module name} — Architecture
+Fill the contract's `project/architecture.md` template ([`../sdd_templates.md`](../sdd_templates.md)) as follows:
 
-## Chosen pattern
-{e.g. "MVVM-C"}
-
-## Why
-{1-3 sentences tying decision-guide signals to this project.}
-
-## Layers and responsibilities
-- {Layer}: {responsibility, allowed and disallowed dependencies}
-
-## Folder/target structure
-{e.g. Features/{Feature}/View, ViewModel, Coordinator; Domain/UseCases; Data/Repositories}
-
-## Navigation
-{Coordinator/Router responsibilities, or NavigationStack ownership.}
-
-## Dependency injection
-{Convention; container if any; composition root location.}
-
-## State management
-{e.g. @Observable ViewModel → View; or Action → Reducer → State.}
-
-## Testing approach
-{Per-layer isolation; mocking strategy for Repositories/services.}
-
-## Conventions and file naming
-{e.g. {Feature}View.swift, {Feature}ViewModel.swift, {Feature}Coordinator.swift}
-
-## Conformance rules
-{Checkable rules the planner copies into each plan's Conformance checklist, e.g.:
-- Views contain no business logic or data access; they bind to a ViewModel.
-- ViewModels depend on Repository/UseCase protocols, never concrete data sources.
-- Domain imports no SwiftUI/UIKit.
-- Navigation decisions live in the Coordinator, not in Views.
-- Dependencies are injected via initializers; no new singletons.}
-```
+- **Overview**: the chosen pattern (e.g. "MVVM-C"), one to three sentences tying the decision-guide signals to this project, the UI framework, and the deployment targets.
+- **Structure**: one row per layer (e.g. View, ViewModel, Coordinator, UseCase, Repository) with its responsibility and its allowed and forbidden dependencies; below the table, the folder/target structure (e.g. `Features/{Feature}/View`, `ViewModel`, `Coordinator`; `Domain/UseCases`; `Data/Repositories`).
+- **Conventions**: navigation (Coordinator/Router responsibilities, or `NavigationStack` ownership); dependency injection (convention, container if any, composition root location); state management (e.g. `@Observable` ViewModel → View, or Action → Reducer → State); testing approach (per-layer isolation, mocking strategy for Repositories and services); file naming (e.g. `{Feature}View.swift`, `{Feature}ViewModel.swift`, `{Feature}Coordinator.swift`).
+- **Commands**: project generation (`xcodegen generate`, only for an XcodeGen project), lint (`swiftlint` or the repo's linter), `xcodebuild build-for-testing` and `test-without-building` with the project and scheme. Write the destination as `'platform=iOS Simulator,id={UDID}'` (macOS: `'platform=macOS'`); the UDID is picked per session from `xcrun simctl list devices available`, never hardcoded.
+- **Conformance rules** — checkable rules the planner copies into each plan's `Conformance checklist`, e.g.:
+  - `C1` Views contain no business logic or data access; they bind to a ViewModel.
+  - `C2` ViewModels depend on Repository/UseCase protocols, never concrete data sources.
+  - `C3` Domain imports no SwiftUI/UIKit.
+  - `C4` Navigation decisions live in the Coordinator, not in Views.
+  - `C5` Dependencies are injected via initializers; no new singletons.
 
 ## Example skeleton (MVVM-C default)
 

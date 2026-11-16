@@ -9,13 +9,13 @@ You write small source files; a script builds a self-contained HTML preview. Nev
 
 ```
 .agentic_coding/
-  base/              Phase A — once per repo
+  project/design_system/      Phase A — the base, once per repo or workspace
     config.json        brand, devices, nav/overlay styling, style-guide notes
     tokens.css         fonts, colours (light + dark), type, spacing, radius, component tokens
     base.css           repo-specific component overrides / extra base components
     lock.json          written by `lock`
     base-preview.html  built: style guide + demo feature
-  feature/<slug>/    Phase B — one per prototype
+  features/<slug>/preview/    Phase B — one per feature
     views.html  spec.json  feature.css  logic.js   →  <slug>.html (built)
 ```
 
@@ -29,6 +29,7 @@ CLI (no dependencies, Node 16+). Below, `fpk` = `node <this-skill-dir>/scripts/f
 | `fpk build --all` | rebuild every feature after a base change |
 | `fpk extract <file.html> <slug> [--base]` | import an existing standalone kit HTML |
 | `fpk list` · `fpk info [slug]` | overview |
+| `fpk migrate` | move an earlier layout (`base/`, `feature/<slug>/`) to the folders above |
 
 ## Token budget rules
 - **Never read** built `*.html` files or anything in `assets/core/`. They are large and you don't need them.
@@ -36,13 +37,13 @@ CLI (no dependencies, Node 16+). Below, `fpk` = `node <this-skill-dir>/scripts/f
 - Check with `fpk validate` first (no browser). In a browser, prefer one `fpk_walk` call over many taps or screenshots.
 
 ## Which phase?
-- **Phase A:** the user asks to set up or import a design system, **or** `.agentic_coding/base/lock.json` is missing when a feature is requested. If it's missing and the user just wants a quick preview, ask: "set up the design system first, or use the neutral kit?" The neutral kit is `fpk init` then `fpk lock` with no edits.
+- **Phase A:** the user asks to set up or import a design system, **or** `.agentic_coding/project/design_system/lock.json` is missing when a feature is requested. If it's missing and the user just wants a quick preview, ask: "set up the design system first, or use the neutral kit?" The neutral kit is `fpk init` then `fpk lock` with no edits.
 - **Phase B:** everything else (prototype a feature or component).
 
 ## Phase A: design-system base (read `references/phase-a-base.md`)
 1. `fpk init`.
 2. Extract values from the user's sources (ranked: code > token files > Figma > PDF > website > images). Write `tokens.css`, `config.json` and `base.css`. Never invent brand values; record derived or approximate ones in `config.json` → `base.notes`.
-3. `fpk build --base`, open `base/base-preview.html`, and run `fpk_check_contrast` (all pairs must pass in light and dark). Click through the demo on every device.
+3. `fpk build --base`, open `project/design_system/base-preview.html`, and run `fpk_check_contrast` (all pairs must pass in light and dark). Click through the demo on every device.
 4. `fpk lock --version 1.0.0`. Report the sources, the derived values and the contrast results.
 
 ## Phase B: feature prototype (read `references/phase-b-feature.md`; look up `references/syntax.md` and `references/components.md` as needed)
@@ -56,7 +57,7 @@ CLI (no dependencies, Node 16+). Below, `fpk` = `node <this-skill-dir>/scripts/f
 8. Report: path to `<slug>.html`, the views and paths covered, and any **base gaps** (things the base lacked; propose them as a Phase A change, never edit the base in Phase B).
 
 ## Hard rules
-- Phase B never edits `.agentic_coding/base/`. The build refuses a changed base.
+- Phase B never edits `.agentic_coding/project/design_system/`. The build refuses a changed base.
 - One feature per folder; no app around it. Nav items for other areas can point to placeholder views.
 - Use tokens only: no raw colours, sizes or fonts. No `<script>` or `on*=` in templates.
 - Prefer the base's extra components (listed in its style guide) over new feature CSS.

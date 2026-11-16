@@ -16,6 +16,7 @@
 | Path | Purpose |
 |---|---|
 | `AGENTS.md` | Source of truth for agent behavior in this repo; cross-agent guidance for AGENTS.md-based agents |
+| `skills/sdd-engineering-workflow/` | Parent workflow skill: stack-agnostic spec-driven development lifecycle (intent, plan, validation, status, handoff); owns the shared `.agentic_coding/` contract (`references/sdd_contract.md`, `sdd_templates.md`, `intake.md`, `bundle_workflow.md`) that the other skills copy |
 | `skills/feature-preview-kit/` | Shared preview skill: builds the repo/workspace design-system base and feature-specific clickable previews (CLI `scripts/fpk.js`) |
 | `skills/<name>/SKILL.md` (one programming skill per language/stack, e.g. `swift-frontend-programming`, plus the stack-agnostic `frontend-development-planner`) | Canonical Claude Code skill (frontmatter `name` + trigger-oriented `description`), with `references/` for templates and guides |
 | `plugin.json` | Plugin manifest (single source); `.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` are symlinks to it — never fork them |
@@ -27,6 +28,7 @@
 
 | Skill | Applies to | Section |
 |---|---|---|
+| `sdd-engineering-workflow` | any request to specify, plan, build, change, fix, validate, resume, or hand off a feature or task, on any stack (no file pattern) | SDD Engineering Workflow Guidelines |
 | `frontend-development-planner` | planning requests for any frontend stack (no file pattern) | Frontend Development Planner Guidelines |
 | `feature-preview-kit` | design-system base and feature previews, used by the planner (base) and programming skills (previews) | Feature previews and design-system base |
 | `swift-frontend-programming` | `**/*.swift` | Swift Frontend Programming Guidelines |
@@ -34,21 +36,58 @@
 
 ## Working in this repository
 
-- **Terminology**: "feature" replaces "component" as the unit of work; requests, keys, directories, and files using the old name remain readable (see the contract's *Terminology and compatibility*). The OKF `type` strings are unchanged.
+- **Terminology**: a *feature* is the application-level unit (formerly "component"); a *task* is one unit of work on it (formerly "change"). Earlier names, keys, gates, and directories remain readable through the *Earlier layout* tables of the SDD contract and the frontend profile.
 
 - **Adding or changing a skill**: edit `skills/<name>/SKILL.md` and its `references/`, then keep the matching section in this file and `.cursor/rules/<name>.mdc` consistent with it. Each skill section here is scoped to a file pattern — apply it only when editing or generating matching files.
 - **Adding a skill for a new stack** (React, Node, Python, …):
-  1. Create `skills/<stack>-<area>-programming/SKILL.md` + `references/`; the skill must be self-contained and must not mention other stacks. Copy `references/change_artifacts.md` and `references/artifact_templates.md` from the planner unchanged, gate design/development on an approved plan from `frontend-development-planner`, and revert to it when later input conflicts with the plan.
-  2. Add `skills/frontend-development-planner/references/stacks/<stack>.md` (Detection, Project name, UX spec hints, Plan hints, How to use, Catalog, Decision guide, Output template with Conformance rules) and a row to the planner's Stack detection table. The planner is the only skill that may mention several stacks, and only in that table and its `stacks/` files.
+  1. Create `skills/<stack>-<area>-programming/SKILL.md` + `references/`; the skill must be self-contained and must not mention other stacks. Copy `references/sdd_contract.md` and `references/sdd_templates.md` from `sdd-engineering-workflow` and `references/frontend_profile.md` from the planner unchanged, gate design and build on an approved intent and plan from `frontend-development-planner`, and revert to it when later input conflicts with them. A skill for a non-UI stack skips the frontend profile, the planner, and step 2, and gates on a task planned with `sdd-engineering-workflow`.
+  2. Add `skills/frontend-development-planner/references/stacks/<stack>.md` (Detection, Project name, UX spec hints, Plan hints, How to use, Catalog, Decision guide, Architecture document with Conformance rules) and a row to the planner's Stack detection table. The planner is the only skill that may mention several stacks, and only in that table and its `stacks/` files.
   3. Add one section below, headed `## <Stack> <Area> Guidelines`, with an `**Applies to:**` file pattern (e.g. `**/*.tsx`, `**/*.py`) and its guardrails, using the same category headings as other sections where they apply (security, errors, logging, testing, performance, accessibility, localization) so sections stay comparable. Omit categories that don't fit the stack.
   4. Add the `.cursor/rules/<name>.mdc` and a row to the Skill catalog above.
   5. Keep stack-specific tooling (linters, test runners, project scaffolding) inside that skill's section and references — never in the generic sections of this file.
 - **Parity**: guidance must be equivalent across Claude Code, AGENTS.md-based agents, and Cursor. Do not let one drift.
-- **Handoff contract**: every copy of `references/change_artifacts.md` and `references/artifact_templates.md` (planner and each programming skill) must be byte-identical; change them together and verify with `diff`.
+- **Shared contract**: `sdd-engineering-workflow` owns `references/sdd_contract.md`, `sdd_templates.md`, `intake.md`, and `bundle_workflow.md`; `frontend-development-planner` owns `references/frontend_profile.md`. The planner ships copies of all four SDD files; each programming skill ships copies of `sdd_contract.md`, `sdd_templates.md`, and `frontend_profile.md`. Every copy must be byte-identical to its owner's file; change them together and verify with `diff`.
+- **Independence**: `sdd-engineering-workflow` and its four shared files must stay agent-, harness-, and stack-independent — no tool, command, or stack names. Frontend specifics live only in `frontend_profile.md`, the planner, and the stack skills.
 - **Skill quality bar**: each rule is a checkable instruction (not advice); templates are validated by actually using them (generate, build, run); every reference file is linked from `SKILL.md`; no invented URLs, IDs, or package names.
 - **Manifest**: bump `version` in `plugin.json` for user-visible skill changes; do not edit the symlinks.
 - **Never touch repo files while testing an artifact** — test output lives under `.test/` only.
 - **Commits**: only when asked; follow the attribution lines supplied by the harness.
+
+---
+
+## SDD Engineering Workflow Guidelines
+
+**Applies to:** any request to specify, plan, build, change, fix, validate, resume, or hand off a feature or task, on any stack; any workspace that has a `.agentic_coding/` directory; and any request to build an app or feature fast without specs ("vibe coding"). Not for questions, code review, or edits that change no behaviour.
+
+The spec-driven development lifecycle lives in [`skills/sdd-engineering-workflow/SKILL.md`](skills/sdd-engineering-workflow/SKILL.md); the bundle contract is [`references/sdd_contract.md`](skills/sdd-engineering-workflow/references/sdd_contract.md) and the templates are [`references/sdd_templates.md`](skills/sdd-engineering-workflow/references/sdd_templates.md). The guardrails below are the AGENTS.md-facing copy; the skill wins if the two differ.
+
+### Records & discovery
+
+- **Bundle**: `{root}/.agentic_coding/` is an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) bundle with `project/` (workflow playbook, architecture, decisions), `features/{feature}/` (living `spec.md`, tasks), and `tasks/` (work no feature owns). Find it by walking up from the working directory to the repository root; the nearest bundle wins.
+- **Task**: one reviewable unit of work — `create`, `change`, `bugfix`, or `technical` — in `{yyyymmdd}-{task_type}-{slug}/` with `status.md`, `intent.md` (what and why), `plan.md` (how, module map, decisions, work items), `validation.md` (validation plan, runs, results, acceptance), and optionally `ux_design.md` and `handoff.md`.
+- **Start every session** at the bundle `index.md`, read a task's `status.md` first, and run the resume check (claim, revisions, repository state, handoff) before any other work. Keep `index.md`/`log.md` current in the same step that changes a document.
+- **State lives only in the bundle** — never in conversation history, harness memory, or a tool-specific task list. The skill names no tool, command, or agent feature.
+
+### Workflow & approvals
+
+- **Steps**: 0 session start → 1 bootstrap the bundle (G0) → 2 intake and intent (G1) → 3 plan and validation plan (G2) → 4 UX design, only for a new or changed visual interface (G3) → 5 build → 6 validate (G4) → 7 close.
+- **Hard gate**: product code only for a task whose intent and plan are approved for their latest revisions and whose design phase is approved or skipped.
+- **Human in the loop**: derive before asking; ask at most 5 numbered questions a round, each with options and a recommended default; an unknown becomes an open question, never a guess. Approvals are explicit and recorded in `status.md` → `Approvals`; a general go-ahead in reply to a gate request approves that gate only. If the human can't be asked, record a pending row and stop.
+- **Profiles**: user-interface work is planned by `frontend-development-planner` (steps 0–3) and built by the stack programming skill (steps 4–7) under this same contract, with the additions in the frontend profile.
+- **Tracks**: `full` by default; `lite` only when the contract's lite conditions hold; `express` only on the human's explicit request for speed. `lite` and `express` merge G1 and G2.
+- **Vibe-coding guardrail**: never refuse and never start coding; explain once why records cut later effort and tokens, then use `express`. A gate can be waived (auto-approved, with assumptions logged); a record — intent, module map, decisions, validation plan, `spec.md` — cannot.
+- **Reverts**: input that conflicts with an approved document is never applied silently — record a `Reverts` row, set the owning phase to `reverted`, stop, and resolve it with the human. Anything noticed outside the plan, and new scope raised at acceptance, is recorded in `status.md` → `Follow-ups` and becomes a new task — never built unasked.
+- **Session end**: before ending any turn that changed a task, update `Progress`, `git.head`, and the `Handoff note` (done, next action, watch out); write `handoff.md` when work is half-finished, an approach was abandoned, or setup is undocumented.
+- **Close**: update the feature `spec.md`, promote feature- and project-scope decisions, and never edit a closed task again.
+
+### Engineering guardrails
+
+- **Modularity**: one responsibility per source file; user interface, domain logic, and data access or I/O in separate modules; one-way dependencies through listed public interfaces; a file beyond 300 lines is split or justified.
+- **Decision logging**: every choice of technology, dependency, data model, interface, or structure has a `Decisions` row with its reason and a rejected alternative; a build-time choice that changes the module map, an interface, the data model, or a dependency is a revert.
+- **Traceability**: every acceptance criterion is covered by a work item and a validation case; validation evidence is append-only.
+- **Security and privacy**: no secrets or personal data in source, logs, fixtures, or artifacts; validate external input at the boundary; never invent URLs, IDs, endpoints, ticket numbers, or package names.
+- **Third-party dependencies**: only when the standard library or framework does not cover the need, vetted for maintenance, license, and vulnerabilities, and approved with the plan.
+- **Failures**: fix the root cause; never delete or skip a test, weaken an assertion, or suppress a warning to pass; after three attempts or when the human is needed, record a blocker and stop.
 
 ---
 
@@ -60,27 +99,29 @@ Planning and architecture/design-pattern enforcement live in [`skills/frontend-d
 
 ### Scope & approvals
 
-- **Output**: a change directory under `{root}/.agentic_coding/{feature_name}/changes/` with `status.md`, `intent.md`, `plan.md` (`phase_plan: approved`), per [`references/change_artifacts.md`](skills/frontend-development-planner/references/change_artifacts.md) and the templates in [`references/artifact_templates.md`](skills/frontend-development-planner/references/artifact_templates.md).
+- **Role**: the planning role of the SDD workflow for user-interface work — the contract, gates, tracks, human-in-the-loop protocol, and vibe-coding guardrail of the SDD Engineering Workflow Guidelines apply, with the additions in [`references/frontend_profile.md`](skills/frontend-development-planner/references/frontend_profile.md).
+- **Output**: a task directory under `{root}/.agentic_coding/features/{feature}/tasks/` with `status.md`, `intent.md`, `plan.md`, and `validation.md` → `Validation plan` (`phase_intent` and `phase_plan` `approved`), per [`references/sdd_contract.md`](skills/frontend-development-planner/references/sdd_contract.md) and the templates in [`references/sdd_templates.md`](skills/frontend-development-planner/references/sdd_templates.md).
 - **Knowledge bundle**: `{root}/.agentic_coding/` is an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) bundle; start every session from its `index.md` and keep `index.md`/`log.md` current in the same step that changes a document.
-- **Ownership**: the planner alone writes `intent.md` and `plan.md`; every edit adds a `Change tracker` row. `status.md` holds phase state (`phase_plan`, `phase_design`, `phase_dev`), approvals, and progress.
-- **Derive before asking**: stack (repo markers + task context), project name (stack guide sources), and inputs (repo, baseline, UX spec), recording each input's source; propose a feature name for approval when none is given.
-- **Track**: `lite` only for a small `change`/`bugfix` meeting the contract's lite conditions, approved by the user; otherwise `full`.
-- **Re-entry**: on a revert or re-plan, turn each trigger into a `plan.md` → `Open questions` entry and resolve all of them with the user before editing the plan.
-- **Repo-wide prerequisites (owned by the planner)**:
-  - Design-system base: a locked `{root}/.agentic_coding/base/` built with `feature-preview-kit` Phase A (reuse if locked; otherwise the user chooses set-up or neutral kit); planning cannot be approved without it. Nested `{root}` (monorepo workspaces) each own a base; nearest wins.
-  - UX design specification: the nearest repo spec (`DESIGN.md`, `docs/design*`, theme module) takes precedence; otherwise create `{root}/.design/{project_name}_design_specification.md` from [`references/ux_design_specification_template.md`](skills/frontend-development-planner/references/ux_design_specification_template.md).
-  - Architecture: the repo document takes precedence; otherwise detect or select a pattern via the stack guide and save `{root}/.agentic_coding/design_and_architecture_patterns.md`, including conformance rules.
-- **Approvals**: feature name and intent, UX spec, architecture document, plan (including the design-phase decision), and any new third-party dependency need explicit user approval unless the user says to proceed without asking. If the user can't be asked, record a pending `Approvals` row and the open question, and stop.
-- **Plan completeness**: the intent passes validation, no open question remains, every acceptance criterion maps to a work item and a test.
+- **Ownership**: the planner alone writes `intent.md`, `plan.md`, and the validation plan; every edit adds a revision-table row. `status.md` holds phase state (`phase_intent`, `phase_plan`, `phase_design`, `phase_build`, `phase_validation`), approvals, and progress.
+- **Derive before asking**: stack (repo markers + task context), project name (stack guide sources), and inputs (repo, feature `spec.md`, UX spec), recording each input's source; propose a feature name for approval when none is given.
+- **Track**: `lite` only for a small task meeting the contract's and the profile's lite conditions, approved by the user; `express` only on the user's explicit request for speed; otherwise `full`.
+- **Re-entry**: on a revert or re-plan, turn each trigger into an `Open questions` entry in the document it conflicts with, and resolve all of them with the user before editing it.
+- **Project-wide prerequisites (owned by the planner)**:
+  - Bundle: created at bootstrap with `project/workflow.md` and `project/decisions.md` (gate G0).
+  - Design-system base: a locked `{root}/.agentic_coding/project/design_system/` built with `feature-preview-kit` Phase A (reuse if locked; otherwise the user chooses set-up or neutral kit); a plan whose design phase is required cannot be approved without it. Nested `{root}` (monorepo workspaces) each own a base; nearest wins.
+  - UX design specification: the nearest repo spec (`DESIGN.md`, `docs/design*`, theme module) takes precedence; otherwise create `{root}/.agentic_coding/project/ux_design_specification.md` from [`references/ux_design_specification_template.md`](skills/frontend-development-planner/references/ux_design_specification_template.md).
+  - Architecture: the repo document takes precedence; otherwise detect or select a pattern via the stack guide and write `{root}/.agentic_coding/project/architecture.md`, including commands and conformance rules.
+- **Approvals**: the bundle and architecture document (G0); the UX spec, base, and UI pattern (F1); feature, task type, track, and intent (G1); the plan with its validation plan, the design-phase decision, and any new third-party dependency (G2) — explicit user approval unless the user says to proceed without asking. If the user can't be asked, record a pending `Approvals` row and the open question, and stop.
+- **Plan completeness**: the intent passes validation, no open question remains, every acceptance criterion maps to a work item and a validation case, and every choice of pattern, technology, dependency, data model, interface, or structure has a `Decisions` row.
 - No stack guide for the detected stack → stop and ask; never plan without one.
 
 ### Architecture & maintainability
 
-- Every planned file has exactly one layer/role in the plan's `Architecture mapping`, with allowed and forbidden dependencies.
-- No mapping row may break the documented dependency direction; don't mix a new pattern into a module that follows another.
+- Every planned file has exactly one layer/role and one responsibility in the plan's `Module map`, with allowed and forbidden dependencies.
+- No `Module map` row may break the documented dependency direction; don't mix a new pattern into a module that follows another.
 - Dependency injection over singletons; a new singleton or global state needs a written justification.
 - Access control discipline — plan the minimal public surface.
-- The plan's `Conformance checklist` lists every applicable conformance rule; the programming skill must tick it before reporting.
+- The plan's `Conformance checklist` lists every applicable conformance rule; the programming skill must tick each one in `validation.md` → `Conformance` before acceptance.
 - A requirement that can't be met within the pattern is surfaced to the user as a decision — never a silent deviation.
 
 ### Other plan-time guidelines
@@ -92,7 +133,7 @@ Planning and architecture/design-pattern enforcement live in [`skills/frontend-d
 - **Reuse**: reuse existing components; plan extraction when functionality already exists elsewhere.
 - **Performance**: plan lazy/virtualized rendering for long, data-driven, or image-bearing lists; record the choice for short fixed content.
 - **Localization**: flag development-language-only scope when no languages are requested.
-- **Testing**: plan unit tests for business logic and view models; UI tests only for critical flows.
+- **Testing**: plan unit cases for business logic and view models, UI (`e2e`) cases only for critical flows, an accessibility-audit case per new view, and a `manual` case per state the user will verify.
 
 ---
 
@@ -105,12 +146,14 @@ Guardrails for iOS/macOS frontend development in Swift, SwiftUI/UIKit, and assoc
 ### Scope, context root & approvals
 
 - **Scope**: develop isolated, injectable features and views that can be previewed, tested, and launched alone, then integrated into the main app. Ensure a testable project (unit and UI test targets, isolation harness); scaffold one only when none exists, with user approval (XcodeGen template: [`references/project_template.yml`](skills/swift-frontend-programming/references/project_template.yml)).
-- **Sources of truth**: approved `intent.md` > `plan.md` > `design.md`. Never edit `intent.md`/`plan.md`; input that conflicts with them reverts the change to planning (`phase_plan: reverted`, `Reverts` row, stop).
-- **Root (`{root}`)**: the agent's closest context directory (nearest ancestor of the working path containing `project.yml`, `*.xcodeproj`, `*.xcworkspace`, `Package.swift`, or `.git`); may be nested. Read existing design/architecture docs from `{root}` upward; write new artifacts at the nearest `{root}` under `.design/` and `.agentic_coding/` (committed by default; the user may gitignore them).
-- **Hard gate**: design or code only for a change whose `status.md` has `stack: swift` and `phase_plan: approved` for the plan's latest revision, with a valid intent and complete plan; otherwise stop and run the planner first.
-- **Phases**: design (`design.md` in the change directory plus a `feature-preview-kit` Phase B preview in `.agentic_coding/feature/{feature_slug}/` built on the locked base, never editing the base; a base gap reverts to planning; feedback within the plan is revised, conflicting feedback reverts), development (progress tracked per plan work item in `status.md`), user verification on a simulator or Mac window with remarks recorded, then `report.md` as the handoff. Baselines update only at completion.
-- **Failures**: record unresolved build/test/tooling failures in `status.md` → `Failures and blockers`; never skip tests or suppress warnings to pass; after three attempts or when user action is needed, set `phase_dev: blocked` and stop.
-- **Approvals**: do not advance past project scaffolding, the feature preview, or user verification without explicit user approval (a dependency not in the plan is a plan conflict) — unless the user explicitly says to proceed without asking. If the user can't be asked, stop and record the pending question; never assume. In auto-approve mode, log every assumption.
+- **Role**: the building role of the SDD workflow for Swift user-interface work, under [`references/sdd_contract.md`](skills/swift-frontend-programming/references/sdd_contract.md) and [`references/frontend_profile.md`](skills/swift-frontend-programming/references/frontend_profile.md).
+- **Sources of truth**: approved `intent.md` > `plan.md` > `ux_design.md`. Never edit `intent.md`, the validation plan, or `plan.md` (except appending `Decisions` rows); input that conflicts with them reverts the task to planning (`phase_plan: reverted`, `Reverts` row, stop).
+- **Root (`{root}`)**: the directory holding the nearest `.agentic_coding/` bundle, found by walking up from the working path; may be nested. No bundle means no approved plan — run the planner. The Xcode project (`project.yml`, `*.xcodeproj`, `*.xcworkspace`, `Package.swift`) is looked up in `{root}`. Artifacts are written under `{root}/.agentic_coding/` (committed by default; the user may gitignore it).
+- **Hard gate**: design or code only for a task whose `status.md` has `stack: swift`, `profiles` listing `frontend`, and `phase_intent` and `phase_plan` `approved` for the documents' latest revisions, with a valid intent and complete plan; otherwise stop and run the planner first.
+- **Phases**: design (`ux_design.md` in the task directory plus a `feature-preview-kit` Phase B preview in `.agentic_coding/features/{feature}/preview/` built on the locked base, never editing the base; a base gap reverts to planning; feedback within the plan is revised, conflicting feedback reverts), build (progress tracked per plan work item in `status.md`, every run logged in `validation.md`), validation and user verification on a simulator or Mac window with remarks recorded in `validation.md` → `Acceptance`, then close (`spec.md`, promoted decisions, closing handoff note). `spec.md` changes only at close.
+- **Session continuity**: run the resume check (claim, revisions, repository state, handoff) at session start; before ending any turn that changed the task, update `Progress`, `git.head`, and the `Handoff note`, and write `handoff.md` when the contract requires it.
+- **Failures**: record unresolved build/test/tooling failures in `status.md` → `Blockers`; never skip tests or suppress warnings to pass; after three attempts or when user action is needed, set `phase_build: blocked` and stop.
+- **Approvals**: do not advance past project scaffolding (F2), the feature preview (G3), or user verification (G4) without explicit user approval (a dependency not in the plan is a plan conflict) — unless the user explicitly says to proceed without asking. If the user can't be asked, stop and record the pending question; never assume. In auto-approve mode, log every assumption.
 - Never invent URLs, video/document IDs, endpoints, or package names — ask or use marked placeholders.
 - When presenting a feature preview, verify it yourself first, then give the user a clickable link in chat (relative Markdown link + absolute `file://` URL).
 
@@ -182,7 +225,7 @@ Check whether a centralized logging framework is already in use. If not, use the
 
 ### Architecture & maintainability
 
-- Apply the pattern in `design_and_architecture_patterns.md` uniformly, placing each file per the plan's `Architecture mapping`; tick each `Conformance checklist` item in `status.md` → `Conformance` with evidence before verification — avoid massive view controllers/views mixing business logic and UI.
+- Apply the pattern in `project/architecture.md` uniformly, placing each file per the plan's `Module map`; tick each `Conformance checklist` item in `validation.md` → `Conformance` with evidence before verification — avoid massive view controllers/views mixing business logic and UI.
 - Isolated components: every dependency is a protocol with a live implementation and a mock, injected via initializer or `@Environment`; a `#Preview` per planned state.
 - State per the plan: inputs `let`/`@Binding`, internal state `private(set)` with one owner, outputs as callbacks.
 - Dependency injection over singletons for testability, except where a singleton is genuinely justified (e.g., `URLSession.shared`).
@@ -219,7 +262,7 @@ Check whether a centralized logging framework is already in use. If not, use the
 
 ## Feature previews and design-system base
 
-**Applies to:** the design phase of any stack. [`skills/feature-preview-kit/SKILL.md`](skills/feature-preview-kit/SKILL.md) is the source of truth: the planner runs Phase A (base, once per `{root}`), the programming skill runs Phase B (one preview per feature) and never edits the base. Run its CLI with `--root {root}`.
+**Applies to:** the design phase of any stack. [`skills/feature-preview-kit/SKILL.md`](skills/feature-preview-kit/SKILL.md) is the source of truth: the planner runs Phase A (the base in `.agentic_coding/project/design_system/`, once per `{root}`), the programming skill runs Phase B (one preview per feature in `.agentic_coding/features/{feature}/preview/`) and never edits the base. Run its CLI with `--root {root}`; `fpk migrate` moves a bundle from the earlier `base/` and `feature/<slug>/` folders.
 
 ---
 
@@ -228,7 +271,7 @@ Check whether a centralized logging framework is already in use. If not, use the
 **Applies to:** any request to test, evaluate, or trial a skill, rule set, or other artifact in this repository.
 
 - **Location**: all generated items go under `.test/{yyyymmdd}/{test_name}/` (e.g. `.test/20261002/biryani_recipe/`), where `{test_name}` (the test item / test repo name) and the test specification come from the user's prompt. If the name is missing, ask. `.test/` is gitignored; ensure it is listed in `.gitignore`.
-- **Treat `.test/{yyyymmdd}/{test_name}/` as `{root}`** for the skill under test: its `.design/`, `.agentic_coding/`, project files, and sources are generated inside it, so the repo's own files are never touched.
+- **Treat `.test/{yyyymmdd}/{test_name}/` as `{root}`** for the skill under test: its `.agentic_coding/`, project files, and sources are generated inside it, so the repo's own files are never touched.
 - **Test specification first**: write `TEST_SPECIFICATION.md` in that directory — subject, functional spec as given, the skill-workflow checklist (step → expected artifact → pass criterion), and acceptance tests — before generating anything else.
 - **Follow the skill exactly**, including its approval gates. Take guidance only from the skill under test (`SKILL.md` and its `references/`); do not apply the matching AGENTS.md section. Do not simulate approvals; if a gate can't be answered, stop and report. Do not re-run a test unless the user asks.
 - **Report**: finish with the skill's own report plus a "Skill findings" section listing gaps, ambiguities, and fixes suggested for the skill. Also, **in the report specify estimated token usage to perform the task using skill**

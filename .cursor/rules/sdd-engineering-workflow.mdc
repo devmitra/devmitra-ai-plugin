@@ -1,0 +1,22 @@
+---
+description: Spec-driven development (SDD) for any software task on any stack — human-approved intent, plan, and validation documents, then tracked build, validation, and handoff in a `.agentic_coding/` knowledge bundle. Use when asked to specify, plan, build, change, fix, validate, resume, or hand off a feature or task, when the workspace has a `.agentic_coding/` directory, or when asked to build fast without specs ("vibe coding").
+alwaysApply: false
+---
+
+# SDD Engineering Workflow
+
+Follow `skills/sdd-engineering-workflow/SKILL.md` exactly; it is the source of truth. Contract: `skills/sdd-engineering-workflow/references/sdd_contract.md`; templates: `skills/sdd-engineering-workflow/references/sdd_templates.md`; intake and interview: `skills/sdd-engineering-workflow/references/intake.md`; bundle playbook: `skills/sdd-engineering-workflow/references/bundle_workflow.md`.
+
+- `{root}/.agentic_coding/` is an OKF v0.2 bundle: `project/` (workflow, architecture, decisions), `features/{feature}/` (living `spec.md`, tasks), `tasks/` (work no feature owns). Find it by walking up from the working directory to the repository root; start from its `index.md`; keep `index.md`/`log.md` current in the same step that changes a document.
+- A task (`create`, `change`, `bugfix`, `technical`) has `status.md`, `intent.md`, `plan.md`, `validation.md`, and optionally `ux_design.md` and `handoff.md`. Read `status.md` first and run the resume check before any other work.
+- Steps: 0 session start → 1 bootstrap (G0) → 2 intake and intent (G1) → 3 plan and validation plan (G2) → 4 UX design, only for a new or changed visual interface (G3) → 5 build → 6 validate (G4) → 7 close.
+- Hard gate: product code only when the intent and plan are approved for their latest revisions and the design phase is approved or skipped.
+- Human in the loop: derive before asking; at most 5 numbered questions a round, each with options and a recommended default; never guess — raise an open question. Approvals are explicit and recorded in `status.md`, and a general go-ahead in reply to a gate request approves that gate only; if the human can't be asked, record a pending row and stop.
+- Profiles: user-interface work is planned by `frontend-development-planner` and built by the stack programming skill under this same contract.
+- Tracks: `full` by default; `lite` only under the contract's lite conditions; `express` only on the human's explicit request for speed.
+- Vibe-coding requests: do not refuse and do not start coding; explain once, then use `express`. A gate can be waived (auto-approved, assumptions logged); a record cannot.
+- Conflicting input reverts to the phase that owns the document; anything noticed outside the plan, and new scope at acceptance, is recorded in `status.md` → `Follow-ups` and becomes a new task, never built unasked.
+- Before ending any turn that changed a task: update `Progress`, `git.head`, and the `Handoff note`; write `handoff.md` when the contract requires it.
+- Engineering guardrails: one responsibility per file, separated UI / logic / data access, one-way dependencies, a `Decisions` row for every technology, dependency, data-model, interface, or structure choice, every acceptance criterion covered by a work item and a validation case, append-only validation evidence.
+- State lives only in the bundle; the skill names no tool, command, or agent feature.
+- Never invent URLs, IDs, endpoints, ticket numbers, or package names; never write secrets or personal data into artifacts.
