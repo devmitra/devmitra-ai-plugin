@@ -1,6 +1,6 @@
 # Phase A: build the design-system base
 
-Run `fpk init` first. It creates `.agentic_coding/project/design_system/{config.json,tokens.css,base.css}` from the neutral kit. Edit only those three files.
+Run `fpk init` first. It creates `{bundle}/project/design_system/{config.json,tokens.css,base.css}` from the neutral kit. Edit only those three files.
 
 ## 1. Sources, ranked (higher wins; record every one in `config.json` → `base.sources`)
 
@@ -68,7 +68,7 @@ Prefer component tokens. Use `base.css` only for what tokens can't express, or f
 | `styleGuide` | `principles` (3–6 short rules), `sections` `[{title, description, html}]` for extras and do/don't examples |
 
 ## 5. Review and lock
-1. Run `fpk build --base` and open `.agentic_coding/project/design_system/base-preview.html`.
+1. Run `fpk build --base` and open `{bundle}/project/design_system/base-preview.html`.
 2. Run `FPK.call('fpk_check_contrast')`. It must report `pass: true`, or every failure must be explained in `base.notes`. Fix brand colours that fail as text by adding a darker text token, and keep the original value for fills.
 3. Check the Style guide tab in light and dark. Walk the demo on every device: tab bar or sidebar, sheet or dialog, toasts, focus.
 4. Run `fpk lock --version 1.0.0` (add `--name "Acme Design System"` if needed).

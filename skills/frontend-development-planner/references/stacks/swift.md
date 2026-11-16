@@ -1,6 +1,6 @@
 # Swift (iOS / macOS) stack guide
 
-Stack-specific input for the planner: detecting the Swift stack and project name, Swift hints for the UX spec (SKILL.md → "1.2 UX design specification and design-system base") and for the plan (SKILL.md → "4. Plan and validation plan"), and picking or documenting an iOS/macOS architecture pattern when `{root}/.agentic_coding/project/architecture.md` doesn't cover it yet (SKILL.md → "1.3 Architecture and design pattern").
+Stack-specific input for the planner: detecting the Swift stack and project name, Swift hints for the UX spec (SKILL.md → "1.2 UX design specification and design-system base") and for the plan (SKILL.md → "4. Plan and validation plan"), and picking or documenting an iOS/macOS architecture pattern when `{bundle}/project/architecture.md` doesn't cover it yet (SKILL.md → "1.3 Architecture and design pattern").
 
 ## Index
 - [Detection](#detection) — markers that select this stack
@@ -44,7 +44,7 @@ Fill [`../ux_design_specification_template.md`](../ux_design_specification_templ
 1. **Detect existing signals**: search for `ViewModel`, `Coordinator`, `Reducer`/`Store`, `Presenter`/`Interactor`/`Router`, `Repository`, `UseCase`, or a `Package.swift` with feature modules. If a pattern is already dominant, document *that* one; consistency beats theoretical purity. Pick fresh only for a new or unstructured codebase.
 2. **Gather characteristics**: UI framework, screen count, team size, lifespan, testability needs, state complexity, existing dependencies (TCA, RxSwift).
 3. **Select** via the catalog and decision guide.
-4. **Write** `{root}/.agentic_coding/project/architecture.md` as [Architecture document](#architecture-document) says.
+4. **Write** `{bundle}/project/architecture.md` as [Architecture document](#architecture-document) says.
 5. **Get explicit user approval** before planning against it.
 
 ## Catalog

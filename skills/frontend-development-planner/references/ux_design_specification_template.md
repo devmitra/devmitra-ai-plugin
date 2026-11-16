@@ -1,6 +1,6 @@
 # UX design specification template
 
-One-page template for `{root}/.agentic_coding/project/ux_design_specification.md`: just enough project-wide context to plan and build consistent features. Extract from the repo first (see the stack guide's "UX spec hints" for where each section lives), ask the user only for gaps, mark unknowns `TBD`. Start the file with OKF frontmatter: `type: UX Design Specification`, `title`, `description` (one sentence), `status`, and `generated`.
+One-page template for `{bundle}/project/ux_design_specification.md`: just enough project-wide context to plan and build consistent features. Extract from the repo first (see the stack guide's "UX spec hints" for where each section lives), ask the user only for gaps, mark unknowns `TBD`. Start the file with OKF frontmatter: `type: UX Design Specification`, `title`, `description` (one sentence), `status`, and `generated`.
 
 ## Index
 [1 Platform](#1-platform) · [2 Tokens](#2-tokens) · [3 Existing features](#3-existing-features) · [4 Conventions](#4-conventions) · [5 References](#5-references)

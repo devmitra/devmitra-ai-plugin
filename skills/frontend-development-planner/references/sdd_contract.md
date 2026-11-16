@@ -1,13 +1,13 @@
 # SDD contract
 
-Data model and rules of the `.agentic_coding/` knowledge bundle used by `sdd-engineering-workflow`. The artifacts, not the conversation, carry context between sessions, agents, and harnesses. A skill that extends this workflow (see [Profiles](#profiles)) ships a byte-identical copy of this file and of [`sdd_templates.md`](sdd_templates.md).
+Data model and rules of the `{bundle_dir}` knowledge bundle (default `.agentic_coding`) used by `sdd-engineering-workflow`. The artifacts, not the conversation, carry context between sessions, agents, and harnesses. A skill that extends this workflow (see [Profiles](#profiles)) ships a byte-identical copy of this file and of [`sdd_templates.md`](sdd_templates.md).
 
 ## Index
-[Terms](#terms) · [Knowledge bundle (OKF)](#knowledge-bundle-okf) · [Layout](#layout) · [Discovery](#discovery) · [Ownership](#ownership) · [Phases and gates](#phases-and-gates) · [Approvals](#approvals) · [Task types and tracks](#task-types-and-tracks) · [Sources of truth](#sources-of-truth) · [Checks](#checks) · [Session continuity](#session-continuity) · [Security and privacy](#security-and-privacy) · [Rules](#rules) · [Profiles](#profiles) · [Earlier layout](#earlier-layout)
+[Terms](#terms) · [Configuration](#configuration) · [Knowledge bundle (OKF)](#knowledge-bundle-okf) · [Layout](#layout) · [Discovery](#discovery) · [Ownership](#ownership) · [Phases and gates](#phases-and-gates) · [Approvals](#approvals) · [Task types and tracks](#task-types-and-tracks) · [Sources of truth](#sources-of-truth) · [Checks](#checks) · [Session continuity](#session-continuity) · [Security and privacy](#security-and-privacy) · [Rules](#rules) · [Profiles](#profiles) · [Earlier layout](#earlier-layout)
 
 ## Terms
 
-- **`{root}`**: the directory that contains `.agentic_coding/`. **`{bundle}`** = `{root}/.agentic_coding`.
+- **`{bundle_dir}`**: the bundle's directory name or relative path, `.agentic_coding` unless [configured](#configuration). **`{root}`**: the directory that contains `{bundle_dir}/`. **`{bundle}`** = `{root}/{bundle_dir}`.
 - **Feature**: an application-level capability or component with a living specification (`spec.md`). `{feature}` is its kebab-case directory name.
 - **Task**: one reviewable unit of work with a `task_type`: `create` (new feature), `change` (modify a specified feature), `bugfix`, or `technical` (refactor, migration, upgrade, tooling, spike). `{task_id}` = `{yyyymmdd}-{task_type}-{slug}`; `{task_dir}` is its directory.
 - **Work item**: one step of a task's plan.
@@ -15,6 +15,16 @@ Data model and rules of the `.agentic_coding/` knowledge bundle used by `sdd-eng
 - **Actor**: `human:{id}` (`{id}` = git `user.name`, else `user`; never an email), or `{agent}/{version}` built from the agent and model or version names the harness states (e.g. `my-agent/1.4`); `agent/unknown` when it states none. Never invent one.
 - **Timestamp**: ISO 8601 UTC read from the system clock (e.g. `date -u +%Y-%m-%dT%H:%M:%SZ`); never estimated. A date — in a `{task_id}`, a `log.md` heading, or a decision row — is the UTC date of the same clock.
 - **IDs**: `R` requirement, `AC` acceptance criterion, `Q` open question, `D` decision, `W` work item, `V` validation case, `RUN` validation run, `DEF` defect, `B` blocker, `C` conformance rule — each followed by a number. `R` and `AC` are scoped to the feature and continue across its tasks; all others are scoped to their document. An ID is never renumbered or reused; a dropped item keeps its row, marked `removed`.
+
+## Configuration
+
+`{bundle_dir}` is the only configurable name; every other directory and file name in this contract is fixed.
+
+- **Config file**: `.sdd.json` at the repository root (or at `{root}` when there is no repository) holds `{ "bundle_dir": "<relative path>" }`. A missing file, or a file without the key, means the default `.agentic_coding`.
+- **Valid value**: a relative path of one or more segments (e.g. `docs/sdd`) with no `..`, no leading `/`, and no backslash. An invalid value is an error to report to the human, never silently replaced.
+- **Resolution**: the nearest `.sdd.json` found walking up from the working directory sets `{bundle_dir}` for the whole walk; a harness or script may override it explicitly for one run. Without a config file the default applies.
+- **Setting it**: gate G0 asks for the bundle location. A choice other than the default is recorded by writing `.sdd.json`, which is committed with the repository; the choice is never recorded only in conversation.
+- Everything written into the bundle (links, `index.md`, `log.md`) is relative, so changing `{bundle_dir}` never changes a document's content. To move an existing bundle, move the directory, update `.sdd.json`, and add a `log.md` entry.
 
 ## Knowledge bundle (OKF)
 
@@ -42,7 +52,7 @@ Templates for every document: [`sdd_templates.md`](sdd_templates.md).
 ## Layout
 
 ```
-{root}/.agentic_coding/                 # {bundle}
+{root}/{bundle_dir}/                    # {bundle}
   index.md                              # project documents, features, project-level tasks
   log.md                                # bundle created, features added, project documents changed
   project/
@@ -76,7 +86,7 @@ Templates for every document: [`sdd_templates.md`](sdd_templates.md).
 
 Every session starts here, before reading anything else.
 
-1. **Find the bundle**: starting at the working directory (or the directory of the file being worked on), walk up through its ancestors to the repository root (the nearest ancestor holding `.git`); with no repository, check the working directory only. The first directory holding `.agentic_coding/index.md` is `{root}`.
+1. **Find the bundle**: starting at the working directory (or the directory of the file being worked on), walk up through its ancestors to the repository root (the nearest ancestor holding `.git`); with no repository, check the working directory only. Resolve `{bundle_dir}` first ([Configuration](#configuration)). The first directory holding `{bundle_dir}/index.md` is `{root}`.
    - Several bundles on that path (nested workspaces): the nearest is the working bundle and the only one written to; the `project/` documents of the outer ones are read as inherited constraints.
    - None found: there is no bundle yet (the skill's bootstrap step creates one, with approval).
 2. Read `{bundle}/index.md` → project documents, features, project-level tasks.
@@ -131,6 +141,8 @@ If an index is missing or does not list an existing document, fix the index befo
 - **Batching**: G0 may be batched with G1. On the `lite` and `express` tracks G1 and G2 are one review. No other gates are batched.
 - **Non-interactive session** (the human cannot be asked): add a row with decision `pending`, set the phase to `in_review`, write the `Handoff note`, and end the turn. Never assume an answer.
 - **Auto-approve** — only when the human explicitly says to proceed without asking (for one gate or for all): decision `auto-approved`, by the agent actor, notes quoting the instruction; every choice the human would have made is logged in `status.md` → `Assumptions`, and the phase field is set to `approved`. The documents are still written in full: **a gate can be waived, a record cannot**. Auto-approve covers G4 only when the instruction names acceptance explicitly and no `manual` validation case lacks a result.
+- **Scope of auto-approve**: it waives gates only — the approval of documents and of the code built from them. It never covers an operation (below). The instruction applies to the task it was given in; it carries to another task or a later session only when the bundle records it — an `**Update**` entry in the bundle `log.md` quoting the instruction with its actor and time, or the project document a profile defines for it. With no such record, ask again.
+- **Operations** — an *operation* is an action that changes something outside the task's product files and the bundle, or that cannot be undone from the workspace: installing, updating, or removing software on the system; setting up or changing an environment, an account, or a service; deleting files or data the task did not create; publishing (pushing, releasing, or sharing outside the workspace); deploying. Installing, inside the workspace, the dependencies an approved plan lists is not an operation. No gate approval and no auto-approve covers an operation: before each one, ask the human, stating the exact action, its target, why it is needed, and how to undo it. One request may list several actions; the approval covers exactly the listed actions, and an approved action may be repeated unchanged. Record each decision (`approved | rejected | pending`, quoting the human's words) as an `Approvals` row with gate `OP` in the task that performs it — in the bundle `log.md` when no task does, or in the project document a profile defines for operations. A rejected or unanswered operation is not performed; when the work cannot continue without it, record a blocker and stop.
 
 ## Task types and tracks
 
@@ -219,11 +231,13 @@ A `technical` spike produces a decision, not product code: its result is a `Deci
 - **`spec.md`** changes only when a task closes. A closed task directory is never edited again; a new request is a new task.
 - **Open tasks per feature**: before opening a task on a feature that has an open one, tell the human and ask whether to continue the open one or to open a second; a second is allowed only when the planned files of the two do not overlap.
 - **Scope**: an edit that changes no behaviour (typo, comment, formatting) needs no task. Everything else does.
+- **Operations**: an operation is performed only after its own recorded approval (see [Approvals](#approvals)); neither a gate approval nor auto-approve stands in for it.
 
 ## Profiles
 
-A profile is a set of skills that specialises this workflow for a domain or stack: usually one skill holding the planning role and one or more holding the building role. A profile may:
+A profile is a set of skills that specialises this workflow for a domain, a stack, or a scale (a whole application): usually one skill holding the planning role and one or more holding the building role. A profile may:
 - add approvals of its own — prerequisites before G2, or steps of the build — each with its own gate ID and `Approvals` row;
+- add steps before an application's first task and after its last — for example an application intent, a backlog from which the tasks are opened, a risk register, a project handover — where every task it opens still passes each gate of this contract;
 - add frontmatter keys to `status.md`, and sections after the core sections of any task document and of `spec.md`;
 - define how the UX design phase and the build are carried out, and add guardrails and checks to them;
 - add project documents under `project/`, and directories for its own files under `project/` and `features/{feature}/`.

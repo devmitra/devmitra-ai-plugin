@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * feature-preview-kit CLI — no dependencies (Node 16+). All artifacts live in <root>/.agentic_coding/:
+ * feature-preview-kit CLI — no dependencies (Node 16+). All artifacts live in <root>/<bundle_dir>/ (default .agentic_coding):
  *   project/design_system/    the design-system base (Phase A)
  *   features/<slug>/preview/  one feature preview per folder (Phase B)
  *
@@ -14,7 +14,9 @@
  *   list | info [slug]        list features / print a short summary
  *   migrate                   move an earlier layout (base/, feature/<slug>/) to the current folders
  *
- * Root: --root <dir>, else the nearest folder upward containing .agentic_coding, else the nearest with .git, else cwd.
+ * Root: --root <dir>, else the nearest folder upward containing <bundle_dir>, else the nearest with .git, else cwd.
+ * Bundle directory: --bundle-dir <rel>, else $SDD_BUNDLE_DIR, else "bundle_dir" in the nearest .sdd.json found upward
+ *                   from --root or the current directory, else .agentic_coding.
  */
 'use strict';
 const fs = require('fs');
@@ -22,7 +24,8 @@ const path = require('path');
 
 const SKILL = path.resolve(__dirname, '..');
 const ASSETS = path.join(SKILL, 'assets');
-const DIR = '.agentic_coding';
+const DEFAULT_DIR = '.agentic_coding';
+let DIR = DEFAULT_DIR;
 const REGION_IDS = ['fpk-config', 'fpk-tokens', 'fpk-token-overrides', 'fpk-components', 'fpk-base-css', 'fpk-page', 'fpk-runtime'];
 
 // ---------- small helpers
@@ -38,6 +41,21 @@ function takeFlag(args, name, hasValue = true) {
 }
 function slugOk(s) { if (!s || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(s)) die(`invalid slug "${s || ''}" — use lowercase letters, digits and dashes`); return s; }
 function json(p) { try { return JSON.parse(read(p)); } catch (e) { die(`${rel(p)} is not valid JSON: ${e.message}`); } }
+
+function resolveBundleDir(flag, startDir) {
+  let v = flag || process.env.SDD_BUNDLE_DIR;
+  if (!v) {
+    let d = startDir;
+    for (;;) {
+      const f = path.join(d, '.sdd.json');
+      if (exists(f)) { const j = json(f); v = j && j.bundle_dir; break; }
+      const up = path.dirname(d); if (up === d) break; d = up;
+    }
+  }
+  if (v === undefined || v === null || v === '') return DEFAULT_DIR;
+  if (typeof v !== 'string' || path.isAbsolute(v) || v.includes('\\') || v.split('/').some((x) => x === '..' || x === '')) die(`invalid bundle_dir "${v}" — use a relative path without "..", a leading "/" or a backslash`);
+  return v.replace(/\/+$/, '');
+}
 
 function findRoot(explicit) {
   if (explicit) return path.resolve(explicit);
@@ -109,6 +127,7 @@ function buildHtml({ feature, out, title, forceUnlocked }) {
     if (!html.includes(marker)) die(`shell.html is missing ${marker}`);
     html = html.split(marker).join(text);
   }
+  html = html.split('@@bundle_dir@@').join(DIR);
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${(title || 'Feature preview').replace(/[<&]/g, '')}</title>`);
   const lockVal = st.state === 'locked' && !forceUnlocked ? builtHash(html) : 'unlocked';
   html = html.replace(/(<meta name="fpk-base-lock" content=")[^"]*(")/, (_, a, b) => a + lockVal + b);
@@ -352,6 +371,8 @@ const cmds = {
 
 const argv = process.argv.slice(2);
 const rootFlag = takeFlag(argv, 'root');
+const bundleFlag = takeFlag(argv, 'bundle-dir');
+DIR = resolveBundleDir(bundleFlag, rootFlag ? path.resolve(rootFlag) : process.cwd());
 const [cmd, ...rest] = argv;
 if (!cmds[cmd]) { const src = read(__filename).split('\n'); console.log(src.slice(2, src.indexOf(' */')).map((l) => l.replace(/^ \* ?/, '')).join('\n')); process.exit(cmd ? 2 : 0); }
 paths(findRoot(rootFlag));

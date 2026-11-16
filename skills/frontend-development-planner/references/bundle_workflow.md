@@ -30,6 +30,7 @@ This directory is an Open Knowledge Format (OKF) v0.2 bundle maintained with spe
 - Record progress per work item in `status.md` → `Progress`. Record every test run and result in `validation.md`; its run log, defects, and acceptance rows are added, never edited.
 - Note anything you notice that the task does not cover — a gap, a limitation, new scope — under `status.md` → `Follow-ups`. Do not build it unasked.
 - Approval comes only from the human, as an explicit statement, and is recorded in `status.md` → `Approvals`. Never assume an answer; write the question down and ask.
+- Approval of a document, or an instruction to proceed without asking, never covers an operation: installing, updating, or removing software on the system; setting up or changing an environment, account, or service; deleting files or data the task did not create; publishing; deploying. Ask the human before each one — the exact action, its target, and how to undo it — and record the decision as an `Approvals` row with gate `OP`.
 - Never write secrets, credentials, or personal data into these documents, and never invent URLs, IDs, or package names.
 
 ## Before you stop

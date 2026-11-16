@@ -151,6 +151,7 @@ git: { branch: {branch}, base: {commit}, head: {commit} }     # omit when no git
 ## Approvals
 | Gate | Artifact (revision) | Decision | By | At | Notes |
 |---|---|---|---|---|---|
+{Gate: G1–G4, a profile's gate, or `OP` (an operation: write the exact action and its target in the artifact column). Decision: pending | approved | rejected | auto-approved | reverted. An `OP` row is never `auto-approved`.}
 
 ## Progress
 | Work item | Plan rev | State | Owner | Files | Evidence |

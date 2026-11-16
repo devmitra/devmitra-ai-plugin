@@ -38,6 +38,8 @@ One task is one increment a person can review in one sitting. Propose a split, i
 
 Record the tasks not started as `Out of scope` items naming the follow-up task.
 
+**A whole application** — a request for an app, a site, or a product with several features at once — is never one task. When an application-level profile is available (contract → **Profiles**), hand the request to it before opening any task: it records the application's intent and a backlog, and opens one task per backlog item. Without one, propose the split above and get the order approved at G1.
+
 ## Statement forms
 
 - **Requirement**: `When {trigger}, the {system} shall {response}.` Always-true rules drop the trigger: `The {system} shall {rule}.` One response per requirement: triggers that share the same response may share a requirement (`When A, B, or C, the {system} shall {response}`); two different responses are two requirements.

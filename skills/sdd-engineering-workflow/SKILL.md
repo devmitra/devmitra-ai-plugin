@@ -1,6 +1,6 @@
 ---
 name: sdd-engineering-workflow
-description: Runs spec-driven development (SDD) for any software task with any coding agent — turns feature details, a user story, a technical task, a bug, or a change request into human-approved intent, plan, and validation documents, then tracks build, validation, and handoff in a `.agentic_coding/` knowledge bundle so a later session or a different agent can recover the context, specifications, and reasoning. Use when asked to specify, plan, build, change, fix, validate, resume, or hand off a feature or task; when the workspace has a `.agentic_coding/` directory; or when asked to build an app or feature fast without specs ("vibe coding", "just build it"). DO NOT use for questions, code review, or edits that change no behaviour (typos, comments, formatting).
+description: Runs spec-driven development (SDD) for any software task with any coding agent — turns feature details, a user story, a technical task, a bug, or a change request into human-approved intent, plan, and validation documents, then tracks build, validation, and handoff in a knowledge bundle (default directory `.agentic_coding/`) so a later session or a different agent can recover the context, specifications, and reasoning. Use when asked to specify, plan, build, change, fix, validate, resume, or hand off a feature or task; when the workspace has a bundle directory (default `.agentic_coding/`); or when asked to build an app or feature fast without specs ("vibe coding", "just build it"). DO NOT use for questions, code review, or edits that change no behaviour (typos, comments, formatting).
 ---
 
 # SDD Engineering Workflow
@@ -8,7 +8,7 @@ description: Runs spec-driven development (SDD) for any software task with any c
 ## Purpose
 Establish a spec-driven development lifecycle that any agent, in any harness, can start, continue, and audit: the human and the agent co-develop the specifications, the agent builds from them, and the records stay with the code. This skill owns the workflow and its records; it works on its own, and stack or domain skills add their guidelines on top (see [Working with other skills](#working-with-other-skills)).
 
-**Output**: a task directory in `{root}/.agentic_coding/` holding `status.md`, `intent.md`, `plan.md`, `validation.md`, and when needed `ux_design.md` and `handoff.md`; the working code and tests; and an updated feature `spec.md`, indexes, and logs.
+**Output**: a task directory in `{bundle}/` holding `status.md`, `intent.md`, `plan.md`, `validation.md`, and when needed `ux_design.md` and `handoff.md`; the working code and tests; and an updated feature `spec.md`, indexes, and logs.
 
 **References** — follow them exactly:
 - [`references/sdd_contract.md`](references/sdd_contract.md) — the contract: terms, layout, discovery, ownership, phases and gates, approvals, task types and tracks, checks, session continuity, rules.
@@ -35,6 +35,7 @@ Establish a spec-driven development lifecycle that any agent, in any harness, ca
 - **Decisions that are always the human's**: scope and behaviour, any trade-off the user of the software would notice, a new third-party dependency, anything hard to undo, and every gate.
 - **Gate request** — one message containing: the gate and what is being approved; links to the documents with their revisions; a summary of at most 10 lines; what changed since the last revision; and a closing question that names the gate — "Approve G2, or tell me what to change?" — so that a short reply is unambiguous.
 - **Recording, non-interactive sessions, and auto-approve**: per the contract's **Approvals**. Never assume an answer and continue.
+- **Operations**: installing, updating, or removing software on the system; setting up or changing an environment, account, or service; deleting files or data the task did not create; publishing; and deploying each need their own approval, asked and recorded as the contract's **Approvals** → *Operations* says. A gate approval never covers one, and neither does auto-approve: auto-approve waives the review of documents and of the code built from them, nothing else.
 - Never invent external references (URLs, IDs, endpoints, ticket numbers, package names); ask, or use marked placeholders.
 
 ## Vibe-coding guardrail
@@ -47,9 +48,10 @@ Applies when the human asks to build or extend an app or feature without specifi
    - *Gates*: G1 and G2 as one gate request; G4 at the end.
    - *Build*: one work item at a time, as in step 5; never the whole app in one work item.
    - *Close*: `spec.md` and the promoted decisions, as in step 7.
-3. **The human declines the review too** ("don't ask me, just build it"): that is auto-approve — record each gate as `auto-approved`, log every assumption, do not stop at G1–G3, and still write every document. Ask for acceptance (G4) at the end unless the instruction named acceptance.
+3. **The human declines the review too** ("don't ask me, just build it"): that is auto-approve — record each gate as `auto-approved`, log every assumption, do not stop at G1–G3, and still write every document. Ask for acceptance (G4) at the end unless the instruction named acceptance. Operations keep their own approval (see [Human-in-the-loop protocol](#human-in-the-loop-protocol)).
 4. The [Engineering guardrails](#engineering-guardrails) apply in full on every track.
 5. A later request on an app built this way is a `change` or `bugfix` against its `spec.md`; an app built earlier with no spec follows *Code without a spec* in [`references/intake.md`](references/intake.md).
+6. **A whole application** — an app, a site, a prototype, or a product with several features in one request — is never built as one task. When an application-level profile skill is available (see [Working with other skills](#working-with-other-skills)), hand the request to it before opening any task. Without one, split it as *Sizing and splitting* in [`references/intake.md`](references/intake.md) says and run this guardrail on each task.
 
 ## Workflow
 
@@ -79,7 +81,7 @@ Every step ends in a recorded state, so each can run in its own session or be do
    - The repository has its own architecture or convention documents (`ARCHITECTURE.md`, `docs/architecture*`, decision records, contribution guides): they take precedence. Link them under `Sources` and fill only what they leave open.
    - Existing code, no documents: derive the structure, conventions, and commands from the code, and run each command before recording it.
    - Empty repository: record only what is known and leave `status: draft`; the first task's plan decides stack and structure as `Decisions` rows of scope `project`, and completes the document as a work item.
-4. Gate G0 — one request covering: the bundle location; whether to commit or gitignore `.agentic_coding/`; the architecture document; and whether to add a pointer to the repository's agent-instruction file (`AGENTS.md` by default) reading: *"This repository records feature and task context in `.agentic_coding/`. Before changing code, read `.agentic_coding/index.md` and follow `.agentic_coding/project/workflow.md`."* Add the pointer only on approval. Everything created in 2–3 is a proposal until G0 is approved: if the human names another location, move the bundle there; if they decline the bundle, delete it and stop.
+4. Gate G0 — one request covering: the bundle location (default `.agentic_coding/`; any other choice is recorded in `.sdd.json` per the contract's Configuration); whether to commit or gitignore `{bundle_dir}/`; the architecture document; and whether to add a pointer to the repository's agent-instruction file (`AGENTS.md` by default) reading: *"This repository records feature and task context in `{bundle_dir}/` (substitute the configured directory name). Before changing code, read `{bundle_dir}/index.md` and follow `{bundle}/project/workflow.md`."* Add the pointer only on approval. Everything created in 2–3 is a proposal until G0 is approved: if the human names another location, move the bundle there; if they decline the bundle, delete it and stop.
 5. Record the decision in the bundle `log.md` (`**Creation**`, with the approving actor) and mark the approved documents `stable` with a `verified` entry.
 
 ### 2. Intake and intent (gate G1)
@@ -116,7 +118,8 @@ Only when `phase_design` is `pending`. Write `ux_design.md` from the template, c
    - When two sections of the plan contradict each other and one reading satisfies both without changing a listed row, take it and log a decision row naming both sections; otherwise revert.
 6. **Follow-ups**: something you notice that the plan does not cover and that does not stop the work item — a gap in behaviour, a limitation, new scope — is a bullet in `status.md` → `Follow-ups`. Never build it unasked.
 7. **Failures**: record any failure not fixed at the first attempt in `status.md` → `Blockers`. Fix the root cause; never delete or skip a test, weaken an assertion, disable a lint rule, or suppress a warning to get a pass. After three failed attempts at the same failure, or when it needs something only the human can provide, set it to `needs-human`, set `phase_build: blocked`, say what is needed, and end the turn. A failure caused by the plan is a [revert](#revert).
-8. When every row is `done`: `phase_build: done`, `next: Validation`.
+8. **Operations**: when a work item needs an operation, ask for it before performing it and record the decision (contract → **Approvals** → *Operations*). Rejected or unanswered, and the work item cannot be finished without it: record a blocker as in 7.
+9. When every row is `done`: `phase_build: done`, `next: Validation`.
 
 ### 6. Validate (gate G4)
 1. Set `phase_validation: in_progress`. Run every case of the validation plan against the current code — the whole plan, not only the last work item's cases — and record each run. Fill `Results` and tick every `Conformance checklist` item in `Conformance` with evidence.
@@ -159,4 +162,5 @@ Applied when planning (step 3) and checked when building and validating (steps 5
 ## Working with other skills
 - **Stack or coding-guideline skills**: when one exists for the language or framework being built, apply its coding, testing, and tooling rules during steps 4–6. This skill's records, gates, and guardrails still apply.
 - **Profiles** (contract → **Profiles**): a profile may add prerequisites, document sections, and a design and build process. When a profile's planning skill covers the task's domain (for example user-interface work), it runs steps 1–3 and its building skill runs steps 4–7, under this same contract. List the profile in `status.md` → `profiles`. Where a profile and the contract differ, the contract wins.
+- **Application-level profiles**: a profile for a whole application runs before the first task and after the last — it owns the application's intent, backlog, and handover, and records a standing approval mode in its own project document. Each task it opens runs steps 2–7 here, with the sections and validation cases that profile adds.
 - **No such skill**: build from the plan, the repository's conventions in `architecture.md`, and the guardrails above.

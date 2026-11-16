@@ -22,7 +22,7 @@ The first three are byte-identical copies of the files shipped by `sdd-engineeri
 
 ## Context root (`{root}`)
 
-`{root}` is the directory that holds the nearest `.agentic_coding/` bundle, found with the contract's **Discovery** (walk up from the file or module being worked on, or from the working directory). It may be nested (repo root, sub-repo/package root, or workspace/project root).
+`{root}` is the directory that holds the nearest `{bundle_dir}/` bundle (`{bundle_dir}` defaults to `.agentic_coding`, see the contract's **Configuration**), found with the contract's **Discovery** (walk up from the file or module being worked on, or from the working directory). It may be nested (repo root, sub-repo/package root, or workspace/project root).
 - No bundle on that path: there is no approved plan — stop and tell the user to run `frontend-development-planner`.
 - The Xcode project is looked up in `{root}`: `project.yml`, `*.xcodeproj`, `*.xcworkspace`, or `Package.swift`. If the open task's `status.md` → `root` names a different directory, use that one. If still ambiguous, ask the user.
 
@@ -32,7 +32,7 @@ Terms are defined in the contract's **Terms** and the profile's **Terms**. "Feat
 
 ## Knowledge discovery and session continuity
 
-`{root}/.agentic_coding/` is an OKF knowledge bundle covering the project documents and every feature's spec and tasks. Start every session with the contract's **Discovery** (bundle `index.md` → feature `index.md` → the task's `status.md` first) and its **Resume check**; end every turn that changed the task with its **Session end** (`Progress`, `git.head`, the `Handoff note`, `handoff.md` when required, the claim). Keep the indexes and logs current in the same step that changes a document.
+`{bundle}/` is an OKF knowledge bundle covering the project documents and every feature's spec and tasks. Start every session with the contract's **Discovery** (bundle `index.md` → feature `index.md` → the task's `status.md` first) and its **Resume check**; end every turn that changed the task with its **Session end** (`Progress`, `git.head`, the `Handoff note`, `handoff.md` when required, the claim). Keep the indexes and logs current in the same step that changes a document.
 
 ## Approval policy (applies to every step)
 
@@ -47,7 +47,7 @@ Do not move past a gate without explicit user approval, unless the user explicit
 
 Layout, phases, ownership, checks, and security rules are in the contract and the profile; templates are in [`references/sdd_templates.md`](references/sdd_templates.md) plus the profile's **Document additions**. This skill writes only:
 - in the task directory: `status.md` (`phase_design`, `phase_build`, `phase_validation`, `next`, `claim`, `git`, and its `Handoff note`, `Progress`, `Blockers`, `Reverts` sections and its own `Approvals` rows; `phase_intent` / `phase_plan` to `reverted` only), `ux_design.md`, every section of `validation.md` except `Validation plan`, appended rows of `plan.md` → `Decisions`, verification screenshots, and `handoff.md`;
-- the feature preview in `{root}/.agentic_coding/features/{feature}/preview/`, through the `feature-preview-kit` skill (Phase B); never the design-system base in `{root}/.agentic_coding/project/design_system/`;
+- the feature preview in `{bundle}/features/{feature}/preview/`, through the `feature-preview-kit` skill (Phase B); never the design-system base in `{bundle}/project/design_system/`;
 - source and test files, prefixed with `{feature_name}` (e.g. `{feature_name}View.swift`), placed per the plan's `Module map`;
 - at close: the feature's `spec.md` and as-built `ux_design.md`, promoted rows of `project/decisions.md`, and the feature's `index.md` and `log.md`.
 
@@ -173,7 +173,7 @@ Planning belongs to `frontend-development-planner`. Each step ends in a recorded
    - `phase_intent` and `phase_plan` are `approved`, and `intent_revision` and `plan_revision` equal the documents' latest revisions;
    - `intent.md` passes the contract's **Intent validation** and `plan.md` passes **Plan completeness**, each with the profile's additions;
    - the architecture document and the UX spec exist;
-   - when `phase_design` is not `skipped`: `{root}/.agentic_coding/project/design_system/lock.json` exists and the base is unmodified (`fpk info`), matching the base recorded in `plan.md` → `Design spec`.
+   - when `phase_design` is not `skipped`: `{bundle}/project/design_system/lock.json` exists and the base is unmodified (`fpk info`), matching the base recorded in `plan.md` → `Design spec`.
 4. **Gate not met** — including a direct request such as "update the UX of X" or "fix bug Y" with no approved plan: stop, tell the user what is missing, and tell them to run the `frontend-development-planner` skill. Do not plan and do not write code.
 5. **Gate met**: resume at `next`: `Design` → step 3; `Build` → step 4 (requires `phase_design` `approved` or `skipped`); `Validation` → step 5; `Close` → step 6.
 
@@ -199,7 +199,7 @@ Skip this step when `phase_design: skipped` — the planner and the user own tha
 
 Then build the clickable preview with the `feature-preview-kit` skill (Phase B; follow its `SKILL.md` and references, and run its CLI with `--root {root}`; below, `fpk` = `node <feature-preview-kit dir>/scripts/fpk.js`) and get approval:
 
-1. Run `fpk new {feature} --name "{feature_name}"` (the preview lives in `{root}/.agentic_coding/features/{feature}/preview/`; on a `change`, update the existing folder). Write `views.html` and `spec.json` for the plan's views, overlays, and states, plus `logic.js`/`feature.css` only when the kit's DSL and components can't cover it. Link the built `{feature}.html` from `ux_design.md` → `Prototype`, and list the preview in the feature `index.md`.
+1. Run `fpk new {feature} --name "{feature_name}"` (the preview lives in `{bundle}/features/{feature}/preview/`; on a `change`, update the existing folder). Write `views.html` and `spec.json` for the plan's views, overlays, and states, plus `logic.js`/`feature.css` only when the kit's DSL and components can't cover it. Link the built `{feature}.html` from `ux_design.md` → `Prototype`, and list the preview in the feature `index.md`.
 2. Run `fpk validate {feature}` until it prints OK, then `fpk build {feature}`. The build refuses a changed base.
 3. Show every planned state in light and dark mode on the base's devices; use the kit's `fpk_walk` for the happy path, validation errors, overlays, and back navigation, and `fpk check {feature}` must print `UP TO DATE`.
 4. Mirror the planned VoiceOver labels in the preview's visible labels and semantics.
@@ -258,7 +258,7 @@ Record every build, lint, test, tooling, or environment failure that is not fixe
 ### 6. Close
 
 1. Update the feature's `spec.md` as the contract's task-type table says (create it for a `create` task), with the profile's `Feature model` and `Preview` sections and, under `Interfaces and data`, the integration notes (what the host app must inject and where to wire the feature). Link each acceptance criterion to the case that proves it and add this task to `Source tasks`.
-2. If a design was approved, write or merge the feature's as-built `ux_design.md`; the preview in `{root}/.agentic_coding/features/{feature}/preview/` is the living prototype.
+2. If a design was approved, write or merge the feature's as-built `ux_design.md`; the preview in `{bundle}/features/{feature}/preview/` is the living prototype.
 3. Promote decisions: scope `feature` → `spec.md` → `Decisions`; scope `project` → `project/decisions.md`.
 4. In `status.md`: rewrite the `Handoff note` as Delivered / Verified / Follow-ups, set `next: done` and `claim: none`. Set a remaining `handoff.md` to `deprecated`.
 5. Update the feature `index.md` (move the task to `Closed tasks`, list new documents) and add a `**Completion**` entry to its `log.md`.
