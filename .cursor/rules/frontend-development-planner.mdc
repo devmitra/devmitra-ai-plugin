@@ -1,19 +1,20 @@
 ---
-description: Plan a frontend feature (a.k.a. component), change, or bugfix (any stack) before code is written — intent, plan, UX spec, architecture pattern. Use when asked to plan, scope, or structure frontend work, or when a programming skill reverts a change to planning.
+description: Plan a frontend feature (a.k.a. component), change, bugfix, or technical task (any stack) before code is written — intent, plan, validation plan, UX spec, design-system base, architecture pattern — as the planning role of the spec-driven workflow for user-interface work. Use when asked to plan, scope, or structure frontend work, or when a programming skill reverts a task to planning.
 alwaysApply: false
 ---
 
 # Frontend Development Planner
 
-Follow `skills/frontend-development-planner/SKILL.md` exactly; it is the source of truth. Contract: `skills/frontend-development-planner/references/change_artifacts.md`; templates: `skills/frontend-development-planner/references/artifact_templates.md`; stack guides: `skills/frontend-development-planner/references/stacks/`.
+Follow `skills/frontend-development-planner/SKILL.md` exactly; it is the source of truth. Contract: `skills/frontend-development-planner/references/sdd_contract.md`; templates: `skills/frontend-development-planner/references/sdd_templates.md`; frontend profile: `skills/frontend-development-planner/references/frontend_profile.md`; intake and interview: `skills/frontend-development-planner/references/intake.md`; stack guides: `skills/frontend-development-planner/references/stacks/`.
 
 - Never write source code, prototypes, or tests.
-- `{root}/.agentic_coding/` is an OKF v0.2 knowledge bundle: start from its `index.md`; keep `index.md`/`log.md` current in the same step that changes a document.
-- Derive the stack, project name, and inputs from the repo and task context, recording each input's source; ask only for what is missing. Propose a component name for approval when none is given.
-- Steps: 1 prerequisites (UX spec + locked design-system base via feature-preview-kit Phase A, architecture) → 2 inputs and intent → 3 existing work → 4 plan (feature model with state kind/owner/mutability/reactivity; design, technical, and test spec; work items; conformance checklist) → 5 review and approval.
-- The planner alone writes `intent.md` and `plan.md`; every edit adds a `Change tracker` row. Phase state and approvals live in `status.md`.
-- Gates P1–P4 need explicit approval unless the user says to proceed without asking; if the user can't be asked, record a pending `Approvals` row and stop.
-- Lite track only for small changes/bugfixes meeting the contract's lite conditions, with user approval.
-- On a revert or re-plan, add each trigger to `plan.md` → `Open questions` and resolve them all before editing the plan.
-- Plan for isolation (injected, mockable dependencies), security and privacy, accessibility, localization, and the architecture's conformance rules; never silently deviate from the pattern.
+- `{root}/.agentic_coding/` is an OKF v0.2 knowledge bundle (`project/`, `features/{feature}/`, `tasks/`): find it by walking up from the working directory, start from its `index.md`, and keep `index.md`/`log.md` current in the same step that changes a document.
+- Derive the stack, project name, and inputs from the repo and task context, recording each input's source; ask only for what is missing, at most 5 numbered questions a round, each with options and a recommended default. Propose a feature name for approval when none is given.
+- Steps: 1 prerequisites (bundle; UX spec + locked design-system base via feature-preview-kit Phase A in `project/design_system/`; architecture pattern in `project/architecture.md`) → 2 intake and intent → 3 existing work → 4 plan (module map, decisions, work items, conformance checklist; feature model with state kind/owner/mutability/reactivity; design spec; frontend technical spec) and validation plan → 5 review and approval.
+- The planner alone writes `intent.md`, `plan.md`, and `validation.md` → `Validation plan`; every edit adds a revision-table row. Phase state and approvals live in `status.md`.
+- Gates G0 (bundle, architecture), F1 (UX spec, base, UI pattern), G1 (intent), G2 (plan and validation plan) need explicit approval unless the user says to proceed without asking; if the user can't be asked, record a pending `Approvals` row and stop.
+- Tracks: `full` by default; `lite` only under the contract's and the profile's lite conditions; `express` only on the user's explicit request for speed. Vibe-coding requests: explain once, then use `express`; gates can be waived, records cannot.
+- On a revert or re-plan, add each trigger to the `Open questions` of the document it conflicts with and resolve them all before editing it.
+- Plan for isolation (injected, mockable dependencies), modularity, security and privacy, accessibility, localization, and the architecture's conformance rules; log every structural choice in `Decisions`; never silently deviate from the pattern.
+- Before ending any turn that changed a task, update the `Handoff note` in `status.md`.
 - Never invent URLs, IDs, endpoints, or package names; never write secrets or personal data into artifacts.

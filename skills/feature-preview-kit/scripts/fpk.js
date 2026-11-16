@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /*
- * feature-preview-kit CLI — no dependencies (Node 16+). All artifacts live in <root>/.agentic_coding/.
+ * feature-preview-kit CLI — no dependencies (Node 16+). All artifacts live in <root>/.agentic_coding/:
+ *   project/design_system/    the design-system base (Phase A)
+ *   features/<slug>/preview/  one feature preview per folder (Phase B)
  *
- *   init                      create .agentic_coding/base/ from the kit (Phase A start)
+ *   init                      create the base from the kit (Phase A start)
  *   lock [--version v] [--name n]   lock the base sources (Phase A end)
  *   check [slug]              base lock state (+ is the feature's built file up to date); exit 1 on problems
  *   new <slug> [--name "…"] [--demo]   start a feature (blank starter, or the Tasks demo)
@@ -10,6 +12,7 @@
  *   validate <slug> [--json]  static checks of a feature's sources (no browser)
  *   extract <file.html> <slug> [--base] [--force]   import a standalone Feature Preview Kit HTML file
  *   list | info [slug]        list features / print a short summary
+ *   migrate                   move an earlier layout (base/, feature/<slug>/) to the current folders
  *
  * Root: --root <dir>, else the nearest folder upward containing .agentic_coding, else the nearest with .git, else cwd.
  */
@@ -45,8 +48,9 @@ function findRoot(explicit) {
   return process.cwd();
 }
 let ROOT, BASE, FEAT;
-function paths(root) { ROOT = root; BASE = path.join(root, DIR, 'base'); FEAT = path.join(root, DIR, 'feature'); }
-const featDir = (slug) => path.join(FEAT, slug);
+function paths(root) { ROOT = root; BASE = path.join(root, DIR, 'project', 'design_system'); FEAT = path.join(root, DIR, 'features'); }
+const featDir = (slug) => path.join(FEAT, slug, 'preview');
+const oldBase = () => path.join(ROOT, DIR, 'base'), oldFeat = () => path.join(ROOT, DIR, 'feature');
 
 // ---------- hashing (base sources, and runtime-compatible hash of built HTML)
 function fnv1a(str) { let h = 0x811c9dc5; for (const b of Buffer.from(str, 'utf8')) { h ^= b; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
@@ -66,11 +70,11 @@ function findRegion(html, id) {
 function builtHash(html) { return 'fnv1a32:' + fnv1a(REGION_IDS.map((id) => { const r = findRegion(html, id); return id + '\n' + (r ? norm(r.text) : ''); }).join('\n\u0000\n')); }
 
 function baseState() {
-  if (!exists(path.join(BASE, 'config.json'))) return { state: 'missing', msg: `no base — run \`fpk.js init\` (Phase A) in ${rel(ROOT)}` };
+  if (!exists(path.join(BASE, 'config.json'))) return { state: 'missing', msg: exists(path.join(oldBase(), 'config.json')) ? `base found in the earlier layout (${rel(oldBase())}) — run \`fpk.js migrate\`` : `no base — run \`fpk.js init\` (Phase A) in ${rel(ROOT)}` };
   const lockP = path.join(BASE, 'lock.json');
   if (!exists(lockP)) return { state: 'unlocked', msg: 'base not locked — finish Phase A, then `fpk.js lock`' };
   const lock = json(lockP), actual = sourceHash();
-  return lock.hash === actual ? { state: 'locked', lock, msg: `base "${lock.name}" ${lock.version} locked` } : { state: 'modified', lock, actual, msg: `base sources changed since lock ${lock.version} — Phase A: run \`fpk.js lock\`; Phase B: revert .agentic_coding/base` };
+  return lock.hash === actual ? { state: 'locked', lock, msg: `base "${lock.name}" ${lock.version} locked` } : { state: 'modified', lock, actual, msg: `base sources changed since lock ${lock.version} — Phase A: run \`fpk.js lock\`; Phase B: revert ${rel(BASE)}` };
 }
 
 // ---------- build
@@ -88,10 +92,10 @@ function buildHtml({ feature, out, title, forceUnlocked }) {
   const core = (f) => read(path.join(ASSETS, 'core', f));
   const fill = {
     'fpk-config': '\n' + JSON.stringify(cfg, null, 2).replace(/<\/(script)/gi, '<\\/$1') + '\n',
-    'fpk-tokens': '\n' + guard(read(path.join(BASE, 'tokens.css')), 'style', 'base/tokens.css') + '\n',
+    'fpk-tokens': '\n' + guard(read(path.join(BASE, 'tokens.css')), 'style', 'design_system/tokens.css') + '\n',
     'fpk-token-overrides': '',
     'fpk-components': '\n' + compactCss(core('components.css')) + '\n',
-    'fpk-base-css': '\n' + guard(read(path.join(BASE, 'base.css')), 'style', 'base/base.css') + '\n',
+    'fpk-base-css': '\n' + guard(read(path.join(BASE, 'base.css')), 'style', 'design_system/base.css') + '\n',
     'fpk-page': '\n' + compactCss(core('page.css')) + '\n',
     'fpk-feature-css': '\n' + guard(opt('feature.css'), 'style', 'feature.css') + '\n',
     'fpk-spec': '\n' + JSON.stringify(spec, null, 2).replace(/<\/(script)/gi, '<\\/$1') + '\n',
@@ -223,8 +227,6 @@ const cmds = {
     if (exists(path.join(BASE, 'config.json')) && !force) die(`${rel(BASE)} already exists (use --force to overwrite)`);
     for (const f of ['config.json', 'tokens.css', 'base.css']) write(path.join(BASE, f), read(path.join(ASSETS, 'kit', f)));
     if (exists(path.join(BASE, 'lock.json'))) fs.unlinkSync(path.join(BASE, 'lock.json'));
-    const readme = path.join(ROOT, DIR, 'README.md');
-    if (!exists(readme)) write(readme, '# .agentic_coding\n\nArtifacts written by coding agents.\n\n- `base/`: design-system base for feature previews (config.json, tokens.css, base.css, lock.json, base-preview.html)\n- `feature/<slug>/`: one clickable feature prototype per folder (views.html, spec.json, feature.css, logic.js → `<slug>.html`)\n\nOpen any built `*.html` in a browser. Edit sources, not built files.\n');
     console.log(`created ${rel(BASE)}/{config.json,tokens.css,base.css} — fill them (Phase A), then: fpk.js build --base && fpk.js lock`);
   },
   lock(args) {
@@ -335,12 +337,22 @@ const cmds = {
     const st = baseState(); if (st.state === 'missing') die(st.msg);
     const c = json(path.join(BASE, 'config.json'));
     console.log(JSON.stringify({ root: ROOT, base: Object.assign({}, c.base, { lock: st.state }), brand: { product: c.brand && c.brand.product }, devices: (c.devices || []).map((d) => `${d.id}:${d.kind} ${d.width}x${d.height}`), shell: c.shell }, null, 2));
+  },
+  migrate() {
+    let n = 0;
+    const move = (from, to) => { if (exists(to)) die(`${rel(to)} already exists — move ${rel(from)} by hand`); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.renameSync(from, to); console.log(`moved ${rel(from)} → ${rel(to)}`); n++; };
+    if (exists(path.join(oldBase(), 'config.json'))) move(oldBase(), BASE);
+    if (exists(oldFeat())) {
+      for (const s of fs.readdirSync(oldFeat()).filter((s) => exists(path.join(oldFeat(), s, 'spec.json')))) move(path.join(oldFeat(), s), featDir(s));
+      if (!fs.readdirSync(oldFeat()).length) fs.rmdirSync(oldFeat());
+    }
+    console.log(n ? `migrated ${n} folder(s) — run fpk.js check` : 'nothing to migrate');
   }
 };
 
 const argv = process.argv.slice(2);
 const rootFlag = takeFlag(argv, 'root');
 const [cmd, ...rest] = argv;
-if (!cmds[cmd]) { console.log(read(__filename).split('\n').slice(2, 15).map((l) => l.replace(/^ \* ?/, '')).join('\n')); process.exit(cmd ? 2 : 0); }
+if (!cmds[cmd]) { const src = read(__filename).split('\n'); console.log(src.slice(2, src.indexOf(' */')).map((l) => l.replace(/^ \* ?/, '')).join('\n')); process.exit(cmd ? 2 : 0); }
 paths(findRoot(rootFlag));
 try { cmds[cmd](rest); } catch (e) { die(e.message); }

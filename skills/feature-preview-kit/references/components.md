@@ -15,7 +15,7 @@
 | Dialog buttons row | `div.fp-dialog-actions` (inside an overlay) |
 | Layout | `fp-row` (wrap row) `fp-stack` (column) `fp-spacer` `fp-divider` `fp-muted` `fp-h` (no margin) `fp-link` |
 
-The view root, and any form inside it, is already a column with a `space-4` gap. The **base may add components** (e.g. `.acme-chip`). They're listed in its Style guide tab and in `.agentic_coding/base/config.json` → `styleGuide.sections`.
+The view root, and any form inside it, is already a column with a `space-4` gap. The **base may add components** (e.g. `.acme-chip`). They're listed in its Style guide tab and in `.agentic_coding/project/design_system/config.json` → `styleGuide.sections`.
 
 **Type classes:** `text-display` `text-h1` `text-h2` (phone screen titles) `text-h3` `text-body-lg` `text-body` `text-caption` `text-label` `text-code`.
 

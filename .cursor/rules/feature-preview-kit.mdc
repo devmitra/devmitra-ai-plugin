@@ -7,6 +7,7 @@ alwaysApply: false
 
 Follow `skills/feature-preview-kit/SKILL.md` exactly; it is the source of truth.
 
-- Phase A (planner): one locked base per `{root}` in `.agentic_coding/base/`; reuse it when locked, otherwise ask the user for full setup or the neutral kit. Run the CLI with `--root {root}`.
-- Phase B (programming skill): one preview per feature in `.agentic_coding/feature/{feature_slug}/`; never edit the base; report base gaps so planning can amend it.
+- Phase A (planner): one locked base per `{root}` in `.agentic_coding/project/design_system/`; reuse it when locked, otherwise ask the user for full setup or the neutral kit. Run the CLI with `--root {root}`.
+- Phase B (programming skill): one preview per feature in `.agentic_coding/features/{feature}/preview/`; never edit the base; report base gaps so planning can amend it.
+- A bundle in the earlier layout (`base/`, `feature/<slug>/`) is moved with `fpk migrate`.
 - Never hand-edit built HTML; never invent brand values; tokens only.

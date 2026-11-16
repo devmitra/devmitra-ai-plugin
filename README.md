@@ -35,6 +35,9 @@ Cursor reads `.cursor/rules/*.mdc` automatically from the project root — copy 
 
 | Skill | Domain | Claude Code | AGENTS.md | Cursor |
 |---|---|---|---|---|
+| sdd-engineering-workflow | Spec-driven development lifecycle, any stack | [SKILL.md](skills/sdd-engineering-workflow/SKILL.md) | [section](AGENTS.md#sdd-engineering-workflow-guidelines) | [rule](.cursor/rules/sdd-engineering-workflow.mdc) |
+| frontend-development-planner | Frontend planning (SDD planning role for UI work) | [SKILL.md](skills/frontend-development-planner/SKILL.md) | [section](AGENTS.md#frontend-development-planner-guidelines) | [rule](.cursor/rules/frontend-development-planner.mdc) |
+| feature-preview-kit | Design-system base and clickable feature previews | [SKILL.md](skills/feature-preview-kit/SKILL.md) | [section](AGENTS.md#feature-previews-and-design-system-base) | [rule](.cursor/rules/feature-preview-kit.mdc) |
 | swift-frontend-programming | iOS / macOS | [SKILL.md](skills/swift-frontend-programming/SKILL.md) | [section](AGENTS.md#swift-frontend-programming-guidelines-ios--macos) | [rule](.cursor/rules/swift-frontend-programming.mdc) |
 
 More skills covering other domains will be added over time.
