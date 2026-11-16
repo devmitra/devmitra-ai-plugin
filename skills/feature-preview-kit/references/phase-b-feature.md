@@ -1,6 +1,6 @@
 # Phase B: feature prototype
 
-## Files in `.agentic_coding/features/<slug>/preview/`
+## Files in `{bundle}/features/<slug>/preview/`
 
 | File | Content |
 |---|---|
@@ -58,11 +58,11 @@ For a complete reference (filters, handlers, delete confirm, settings), run `fpk
 - **Every `data-fp-bind` path has an initial value in `state`.** One primary button per view; visible labels; error text that says how to fix the problem.
 - **Add `tabBar` only if the feature has peer views.** The base renders it as a tab bar, sidebar or top nav.
 - **Wide screens:** `data-layout="card"` (forms) or `narrow` (lists). Use `data-fp-only="wide"` or `"phone"` only for genuinely different content.
-- **Base gaps:** if you need a colour, component or device the base lacks, report it as a gap. Don't edit `.agentic_coding/project/design_system/`.
+- **Base gaps:** if you need a colour, component or device the base lacks, report it as a gap. Don't edit `{bundle}/project/design_system/`.
 
 ## Verify
 1. `fpk validate <slug>` must print `OK`.
 2. `fpk build <slug>`.
-3. With a browser, open `.agentic_coding/features/<slug>/preview/<slug>.html` and run one `fpk_walk` per path (see `runtime-tools.md`). Check `?theme=dark` once.
+3. With a browser, open `{bundle}/features/<slug>/preview/<slug>.html` and run one `fpk_walk` per path (see `runtime-tools.md`). Check `?theme=dark` once.
 4. `fpk check <slug>` must print `UP TO DATE`.
 5. Report the built file, the paths walked (pass/fail), the states covered and any base gaps.

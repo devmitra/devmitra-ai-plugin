@@ -17,7 +17,7 @@ Extends the SDD contract ([`sdd_contract.md`](sdd_contract.md), templates in [`s
 ## Layout additions
 
 ```
-{root}/.agentic_coding/
+{bundle}/
   project/
     ux_design_specification.md     # project-wide UX spec, unless the repository has its own (DESIGN.md or equivalent)
     design_system/                 # the base (feature-preview-kit, Phase A)

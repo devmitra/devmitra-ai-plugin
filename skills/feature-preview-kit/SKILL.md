@@ -1,6 +1,6 @@
 ---
 name: feature-preview-kit
-description: Build clickable single-file HTML prototypes of ONE feature, flow or UI component, shown in sync on iPhone, Android, tablet and web, styled with the repo's own design system. Use when asked to prototype, mock up, preview or demo a feature/screen/component, or to set up or import a design system (from code, tokens, Figma, PDF, website or screenshots) for such previews. All artifacts go in .agentic_coding/ at the repo or workspace root.
+description: Build clickable single-file HTML prototypes of ONE feature, flow or UI component, shown in sync on iPhone, Android, tablet and web, styled with the repo's own design system. Use when asked to prototype, mock up, preview or demo a feature/screen/component, or to set up or import a design system (from code, tokens, Figma, PDF, website or screenshots) for such previews. All artifacts go in the bundle directory (default `.agentic_coding/`) at the repo or workspace root.
 ---
 
 # Feature Preview Kit
@@ -8,7 +8,7 @@ description: Build clickable single-file HTML prototypes of ONE feature, flow or
 You write small source files; a script builds a self-contained HTML preview. Never hand-edit built HTML.
 
 ```
-.agentic_coding/
+{bundle}/                 (`.agentic_coding/` unless `.sdd.json` sets `bundle_dir`)
   project/design_system/      Phase A — the base, once per repo or workspace
     config.json        brand, devices, nav/overlay styling, style-guide notes
     tokens.css         fonts, colours (light + dark), type, spacing, radius, component tokens
@@ -37,7 +37,7 @@ CLI (no dependencies, Node 16+). Below, `fpk` = `node <this-skill-dir>/scripts/f
 - Check with `fpk validate` first (no browser). In a browser, prefer one `fpk_walk` call over many taps or screenshots.
 
 ## Which phase?
-- **Phase A:** the user asks to set up or import a design system, **or** `.agentic_coding/project/design_system/lock.json` is missing when a feature is requested. If it's missing and the user just wants a quick preview, ask: "set up the design system first, or use the neutral kit?" The neutral kit is `fpk init` then `fpk lock` with no edits.
+- **Phase A:** the user asks to set up or import a design system, **or** `{bundle}/project/design_system/lock.json` is missing when a feature is requested. If it's missing and the user just wants a quick preview, ask: "set up the design system first, or use the neutral kit?" The neutral kit is `fpk init` then `fpk lock` with no edits.
 - **Phase B:** everything else (prototype a feature or component).
 
 ## Phase A: design-system base (read `references/phase-a-base.md`)
@@ -57,7 +57,7 @@ CLI (no dependencies, Node 16+). Below, `fpk` = `node <this-skill-dir>/scripts/f
 8. Report: path to `<slug>.html`, the views and paths covered, and any **base gaps** (things the base lacked; propose them as a Phase A change, never edit the base in Phase B).
 
 ## Hard rules
-- Phase B never edits `.agentic_coding/project/design_system/`. The build refuses a changed base.
+- Phase B never edits `{bundle}/project/design_system/`. The build refuses a changed base.
 - One feature per folder; no app around it. Nav items for other areas can point to placeholder views.
 - Use tokens only: no raw colours, sizes or fonts. No `<script>` or `on*=` in templates.
 - Prefer the base's extra components (listed in its style guide) over new feature CSS.

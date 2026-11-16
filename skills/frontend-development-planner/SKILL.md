@@ -100,16 +100,16 @@ Before step 2, the bundle (1.1), a UX design specification with a locked design-
 #### 1.1 Bootstrap the bundle (gate G0)
 
 Skip when Discovery found a bundle.
-1. Create `{root}/.agentic_coding/` with `index.md`, `log.md`, `project/workflow.md` (per [`references/bundle_workflow.md`](references/bundle_workflow.md)), and `project/decisions.md` from the templates.
-2. Gate G0 — one request covering: the bundle location; whether to commit or gitignore `.agentic_coding/`; the architecture document (step 1.3); and whether to add a pointer to the repository's agent-instruction file (`AGENTS.md` by default) reading: *"This repository records feature and task context in `.agentic_coding/`. Before changing code, read `.agentic_coding/index.md` and follow `.agentic_coding/project/workflow.md`."* Add the pointer only on approval. Everything created in step 1 is a proposal until G0 is approved: if the user names another location, move the bundle there; if they decline the bundle, delete it and stop.
+1. Create `{bundle}/` with `index.md`, `log.md`, `project/workflow.md` (per [`references/bundle_workflow.md`](references/bundle_workflow.md)), and `project/decisions.md` from the templates.
+2. Gate G0 — one request covering: the bundle location (default `.agentic_coding/`; any other choice is recorded in `.sdd.json` per the contract's Configuration); whether to commit or gitignore `{bundle_dir}/`; the architecture document (step 1.3); and whether to add a pointer to the repository's agent-instruction file (`AGENTS.md` by default) reading: *"This repository records feature and task context in `{bundle_dir}/` (substitute the configured directory name). Before changing code, read `{bundle_dir}/index.md` and follow `{bundle}/project/workflow.md`."* Add the pointer only on approval. Everything created in step 1 is a proposal until G0 is approved: if the user names another location, move the bundle there; if they decline the bundle, delete it and stop.
 3. Record the decision in the bundle `log.md` (`**Creation**`, with the approving actor).
 
 #### 1.2 UX design specification and design-system base (design, part 1; gate F1)
 
-The UX spec describes the project's design language; the **base** (`{root}/.agentic_coding/project/design_system/`, built with the `feature-preview-kit` skill, Phase A) is the ready-to-use template every feature preview reuses. Both must be ready before step 2.
+The UX spec describes the project's design language; the **base** (`{bundle}/project/design_system/`, built with the `feature-preview-kit` skill, Phase A) is the ready-to-use template every feature preview reuses. Both must be ready before step 2.
 
 1. Look from `{root}` upward for a repo-specific spec or design system: `DESIGN.md`, `docs/design*`, a design-system/theme module, a Figma link in the README, or `project/ux_design_specification.md` in a bundle. **The nearest repo-specific spec always takes precedence** over this skill's template. If several exist at the same level, ask the user which is authoritative.
-2. If one exists, use it. Flag gaps or stale sections to the user, and fill gaps only in `{root}/.agentic_coding/project/ux_design_specification.md`, without contradicting the repo-specific source.
+2. If one exists, use it. Flag gaps or stale sections to the user, and fill gaps only in `{bundle}/project/ux_design_specification.md`, without contradicting the repo-specific source.
 3. If none exists, create one from [`references/ux_design_specification_template.md`](references/ux_design_specification_template.md), extracting each section per the stack guide's **UX spec hints** and asking only for what is missing. Section 2 (Tokens) links to the base instead of duplicating values.
 4. **Base**: look for `project/design_system/lock.json` in the nearest bundle (in a monorepo each workspace has its own).
    - **Locked and unmodified** (`fpk info`): reuse it. Record its name and version.
@@ -123,7 +123,7 @@ The UX spec describes the project's design language; the **base** (`{root}/.agen
 1. Look from `{root}` upward for a repo-specific architecture document (`ARCHITECTURE.md`, `docs/architecture*`) and for `project/architecture.md` in the bundle. **Repo-specific documents take precedence**: link them under `Sources` in `project/architecture.md` and fill only what they leave open.
 2. If `project/architecture.md` already documents the UI pattern, its dependency rules, and its conformance rules, reuse it and skip the remaining sub-steps. If it exists but lacks them, add them with approval (F1).
 3. Otherwise, follow the stack guide's **How to use**: detect the pattern the codebase already follows, or select one for a new/unstructured codebase via its catalog and decision guide.
-4. Write `{root}/.agentic_coding/project/architecture.md` from the contract's template as the stack guide's **Architecture document** section says, including `Commands` (each one run before it is recorded) and `Conformance rules`; get approval; mark it `stable` with a `verified` entry and list it in the bundle `index.md`.
+4. Write `{bundle}/project/architecture.md` from the contract's template as the stack guide's **Architecture document** section says, including `Commands` (each one run before it is recorded) and `Conformance rules`; get approval; mark it `stable` with a `verified` entry and list it in the bundle `index.md`.
 
 ### 2. Intake and intent (gate G1)
 
@@ -132,7 +132,7 @@ Read [`references/intake.md`](references/intake.md) first.
 2. **Feature**: match the request to a feature in the bundle `index.md`; for a new one, propose `{feature}` (kebab-case) and `{feature_name}` (stack guide → **Plan hints**) and get them approved at G1.
 3. **Track**: propose `lite` only when the contract's and the profile's lite conditions all hold; `express` only under the [Vibe-coding guardrail](#vibe-coding-guardrail); otherwise `full`. Propose a split when the intake guide's size limits are exceeded.
 4. Derive and validate the inputs (see [Inputs](#inputs)).
-5. Create `{task_dir}` (`{root}/.agentic_coding/features/{feature}/tasks/{yyyymmdd}-{task_type}-{slug}/`) with `status.md` (`next: Intent`, `profiles: [frontend]`, `stack`, `project_name`, `feature_name`) and a draft `intent.md` including the profile's `Frontend inputs`. For a `change`/`bugfix`, the intent holds only the delta. Create or update the feature `index.md` and add a `**Creation**` entry to its `log.md`; list a new feature in the bundle `index.md`.
+5. Create `{task_dir}` (`{bundle}/features/{feature}/tasks/{yyyymmdd}-{task_type}-{slug}/`) with `status.md` (`next: Intent`, `profiles: [frontend]`, `stack`, `project_name`, `feature_name`) and a draft `intent.md` including the profile's `Frontend inputs`. For a `change`/`bugfix`, the intent holds only the delta. Create or update the feature `index.md` and add a `**Creation**` entry to its `log.md`; list a new feature in the bundle `index.md`.
 6. Run the interview (intake → **Interview**) until no question is `open`: ask those that change scope or behaviour, and set the rest to `deferred` for the plan.
 7. Run the contract's **Intent validation** with the profile's addition, and fix every failure.
 8. Set `phase_intent: in_review` and send the gate request (on `lite` and `express`, continue and send one request at step 5). On approval: `phase_intent: approved`, `intent_revision` to the latest revision, `intent.md` to `stable` with `verified`, an `Approvals` row, `next: Plan`.
