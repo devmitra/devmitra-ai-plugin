@@ -29,50 +29,26 @@ The code review and the QA run are done by a role that did not write the code an
 - The independent role changes no product file. It reports; the building role fixes; the independent role checks the fix.
 - At most three review-and-fix rounds on the same finding; after that it is a blocker for the human.
 
+**Role briefs** — each role's expertise, boundaries, inputs, workflow, checklist, and report form; the brief is the role's whole instruction:
+- [`roles/code_reviewer.md`](roles/code_reviewer.md) — the code reviewer.
+- [`roles/qa_tester.md`](roles/qa_tester.md) — the QA tester.
+
+**Starting the role**, by level:
+1. `sub-agent`: read the role's brief and start a sub-agent with the brief's full text and the paths of its inputs as the whole prompt. When the harness offers a sub-agent defined for the role — named `app-code-reviewer` or `app-qa-tester`, possibly prefixed with the plugin's name — start that one; otherwise a general-purpose sub-agent. Never add the building conversation or a summary of it.
+2. `fresh session`: give the human the brief's path and the list of inputs, and ask them to start a new session or a different agent with both; record the pending run and end the turn.
+3. `same agent`: work through the brief's workflow and checklist yourself, reading only its inputs; keep its report form.
+
 ## Code review role
 
-Required for a `poc` and an `mvp`. Give the reviewer this brief.
-
-**Inputs**: the task's `intent.md`, `plan.md`, and `validation.md` → `Validation plan`; `project/architecture.md`; the list of files the task created or changed, and their content or diff.
-
-**Check, in this order**:
-1. **Plan conformance**: every changed file has a `Module map` row and holds only the responsibility that row names; nothing imports what its row forbids; no file, public symbol, dependency, or stored field exists that the plan does not list.
-2. **Conformance rules**: each item of the plan's `Conformance checklist`, including every engineering-baseline rule — find the code that satisfies it, or report it missing.
-3. **Correctness against the intent**: each acceptance criterion — the code path that produces its result, and each failure path the intent names.
-4. **Security**: untrusted input reaching a query, a file path, a command, HTML, or a log; a route without its permission check; a secret or personal data in source, a fixture, or a log line.
-5. **Logging**: the events the plan lists exist at their levels; the correlation ID is passed on; no sensitive field is logged outside the masking rule.
-6. **Tests**: each validation case asserts a result a user or caller can observe; no test is skipped, weakened, or passing for the wrong reason.
-7. **Maintainability**: a file over 300 lines without its `Decisions` row; duplicated logic; dead code; a name that misleads.
-
-**Report** — one row per finding, nothing else:
-
-| Severity | File › symbol | Rule or criterion | What is wrong | Suggested fix |
-|---|---|---|---|---|
-
-- `blocker`: wrong behaviour, a security hole, a secret, or a broken plan or conformance rule.
-- `major`: a missing failure path, a missing or meaningless test, sensitive data in a log.
-- `minor`: maintainability. `note`: an observation that needs no change.
-- No finding: say so, and list what was checked.
+Required for a `poc` and an `mvp`. Brief: [`roles/code_reviewer.md`](roles/code_reviewer.md).
 
 **Recording**: the building role adds a `Run log` row for the review (by the reviewer's actor, with the independence level), and one `Defects` row per `blocker` and `major`. A `minor` is fixed, or becomes a `Follow-ups` bullet. The review case passes when no `blocker` or `major` defect is open after the reviewer has checked the fixes.
 
 ## QA role
 
-Required for every app kind. Give the tester this brief.
+Required for every app kind. Brief: [`roles/qa_tester.md`](roles/qa_tester.md).
 
-**Inputs**: the task's `intent.md` (acceptance criteria) and `validation.md` → `Validation plan`; `project/architecture.md` → `Commands`; for the handover, `app.md` → `Success criteria`. Not the plan's design, and not the source code — the tester works from what the app should do.
-
-**Do**:
-1. Start the app with the recorded commands, from a clean state with the seed data. A command that fails as recorded is the first finding.
-2. Run every `e2e` case of the validation plan with the stack's end-to-end tool, recording video and keeping the tool's trace or screenshots on failure.
-3. For each acceptance criterion, perform it as written — the given, the action, the result — in the running app, and compare with what the case asserts. A criterion with no case, or a case that passes while the app does not do what the criterion says, is a finding.
-4. Try each journey's unhappy paths the intent names: wrong input, nothing to show yet, a failure of something it depends on.
-5. On a `prototype`: run the kit's automated walk over every path of the preview — the main path, validation errors, overlays, back, navigation.
-6. Where the baseline applies: pick one journey and follow its correlation ID through the logs of every part.
-
-**Report**: per case — pass or fail, and the evidence path; per finding — the steps to reproduce, what was expected (the criterion's ID), what happened.
-
-**Recording**: the building role adds a `Run log` row for the QA run (by the tester's actor, with the independence level and the evidence paths) and one `Defects` row per finding. The QA case passes when every `e2e` case passes in the tester's run and no acceptance criterion is without a case.
+**Recording**: the building role adds a `Run log` row for the QA run (by the tester's actor, with the independence level and the evidence paths) and one `Defects` row per `blocker`, `major`, and `minor` finding. The QA case passes when every `e2e` case passes in the tester's run and no acceptance criterion is without a case.
 
 ## Dependency audit
 
