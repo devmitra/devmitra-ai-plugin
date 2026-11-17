@@ -142,13 +142,14 @@ Derive the app kind from the request and confirm it at A1. When in doubt between
 | Foundation item first | yes | yes | no | yes | yes |
 | Automated tests | `unit` for view models, the data service, strings, and seed; an `e2e` case per journey against the packaged file, offline | an `e2e` browser case per journey | an automated walk of every preview path | `unit`, `integration`, and `e2e` | same |
 | Independent code review | no | no | no | yes | yes |
-| Independent QA run | yes | yes | yes | yes | yes |
+| Independent QA run | optional — asked at A3, default no | optional — asked at A3, default no | optional — asked at A3, default no | asked at A3, default yes | asked at A3, default yes |
 | Dependency audit | yes | when it has dependencies | no | yes | yes |
 | Security scan | no | no | no | when the app has a backend | when the app has a backend |
 | Logging baseline | client rules | client rules | no | all rules | all rules |
 | Security baseline | client rules | client rules | no | all rules | all rules |
 | Video evidence | when the runner can record | when the runner can record | when the runner can record | when the runner can record | when the runner can record |
 
+- **Independent QA run** is decided once, at A3, for the whole app — every task and the handover — and recorded as `qa_run` in `app_status.md` with a `project/decisions.md` row (source `A3`) quoting the human's words or naming the default. The default is `no` for a `presentation` or `prototype` (their automated `e2e` cases still run on every task) and `yes` for a `poc` or `mvp`. In a mode that auto-approves A3, the default applies, is logged under `Assumptions`, and the A3 report names it. The human may change it at any time: a new decision row; it applies to tasks not yet validated.
 - A `prototype` task with `fidelity: standard` writes `ux_design.md` in its Design phase and builds the feature's preview in its Build phase: the preview's source files are its `Module map`, and the kit's own checks are its validation cases.
 - A task of an app with `fidelity: high` writes `ux_design.md` in its Design phase (no kit preview unless the human asks) and builds product code in its Build phase, under [`packaged_web_app.md`](packaged_web_app.md).
 - When the security scan is required but the scanner cannot be run — its setup operation is declined, or the machine cannot run it — add a `high` risk row `security scan not run` with response `defer` and the trigger `before any publish or deploy`, mark the scan command `unavailable` in `architecture.md` → `Commands`, and plan no scan case. It is then a gap in the handover.
@@ -180,7 +181,7 @@ backlog_item: BL{n}
 ## Stop criteria (required)
 **Done when** — every line names the validation case or checklist item that proves it:
 - every acceptance criterion passes ({V IDs})
-- {each check the rigor table requires for this app kind: independent review, independent QA run, dependency audit, security scan — with its V ID, or `n/a: {reason}`}
+- {each check the rigor table requires for this app kind: independent review, independent QA run (when `qa_run: yes`), dependency audit, security scan — with its V ID, or `n/a: {reason}`}
 - every `Conformance checklist` item passes with evidence
 
 **Stop and ask when** — the agent ends the turn and records a blocker; it never works around one:
@@ -198,7 +199,7 @@ No added sections. The `Validation plan` holds, besides the cases for the accept
 | Check | Level | Expected result |
 |---|---|---|
 | Independent code review | `static` | no open `blocker` or `major` finding |
-| Independent QA run | `e2e` | every `e2e` case passes when run by the QA role; no acceptance criterion is without a case |
+| Independent QA run (when `qa_run: yes`) | `e2e` | every `e2e` case passes when run by the QA role; no acceptance criterion is without a case |
 | Dependency audit | `static` | no known vulnerability rated high or critical |
 | Security scan (a task that adds or changes an HTTP route, or a page served to a browser) | `e2e` | zero High and zero Medium alerts |
 | Traceability (a task that adds a request path) | `integration` | one correlation ID is found in the log lines of every layer the request crosses |
@@ -216,7 +217,7 @@ Each run is a `Run log` row whose `By` is the actor that ran it and whose notes 
 6. No secret, personal data, or invented external reference.
 
 **Architecture completeness** (before A3):
-1. Every platform in `app.md` has a client stack; `has_backend` is `true` or `false`, with the reason as a decision row.
+1. Every platform in `app.md` has a client stack; `has_backend` is `true` or `false`, with the reason as a decision row; `qa_run` is `yes` or `no`, with its decision row.
 2. Every stack choice has a `project/decisions.md` row with a reason and a rejected alternative; no version number was written from memory.
 3. `architecture.md` has every template section; `Structure` gives each layer's allowed and forbidden dependencies; `Commands` lists set-up, run, build, lint, test, `e2e`, and — where the rigor table requires them — audit and scan.
 4. `Conformance rules` holds every engineering-baseline rule that applies to the app kind, each with its own `C` ID; with `fidelity: high`, also the packaged-app rules `W1`–`W10`.
@@ -244,6 +245,6 @@ Each run is a `Run log` row whose `By` is the actor that ran it and whose notes 
 **Handover completeness** (before A6):
 1. Every backlog item is closed or `removed`, or is listed in `handover.md` → `Not delivered`.
 2. Every success criterion of `app.md` has a result from a run against the finished app.
-3. `Gaps` lists every item not delivered, every check not run or run by the same agent, every `manual` case without a result, and every `Known limitations` entry of the feature specs.
+3. `Gaps` lists every item not delivered, every check not run or run by the same agent, every `manual` case without a result, and every `Known limitations` entry of the feature specs. Exception: with `qa_run: no` on a `presentation` or `prototype`, the QA run is not a gap — `Quality evidence` says `not run — optional, skipped by choice`. On a `poc` or `mvp`, `qa_run: no` is a gap.
 4. `Open risks` lists every risk that is not `closed`; `How to run` uses only commands recorded as run in `architecture.md`.
 5. No secret value appears in `handover.md`, the `README`, or the evidence.

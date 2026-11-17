@@ -94,6 +94,7 @@ fidelity: n/a                      # high | standard | n/a — as in app.md
 approval_mode: not-chosen          # not-chosen | review | auto-technical | auto-all — not-chosen until the human answers; gates then wait as in review
 task_track: express                # express | full
 has_backend: undecided             # undecided | true | false — set at A3
+qa_run: undecided                  # undecided | yes | no — independent QA run, set at A3 (default: no for presentation and prototype, yes for poc and mvp)
 phase_app_intent: pending          # pending | in_review | approved | reverted
 phase_design_system: pending       # pending | in_review | approved | reverted
 phase_architecture: pending        # pending | in_review | approved | reverted
@@ -258,7 +259,7 @@ generated: { by: {actor}, at: {timestamp} }
 ## 6. Quality evidence
 | Check | Scope | Result | Evidence |
 |---|---|---|---|
-{Automated tests (counts), independent review, independent QA run, dependency audit, security scan, traceability — each with the run it comes from, or `not required for this app kind`.}
+{Automated tests (counts), independent review, independent QA run, dependency audit, security scan, traceability — each with the run it comes from, `not required for this app kind`, or, for the QA run of a presentation or prototype with `qa_run: no`, `not run — optional, skipped by choice`.}
 
 ## 7. Gaps
 | ID | Gap | Against | Effect | Suggested next step |
