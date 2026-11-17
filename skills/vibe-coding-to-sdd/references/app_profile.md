@@ -83,7 +83,7 @@ Extends the SDD contract ([`sdd_contract.md`](sdd_contract.md), templates in [`s
 
 ## Approval modes
 
-The mode is the human's standing instruction about reviews. It is asked in the opening message of a new app (SKILL.md → *Opening message*), as question 1, in these words or plainer ones, `auto-technical` first and marked recommended — most people who vibe-code an app want to decide what it does and how it looks, not review technical documents:
+The mode is the human's standing instruction about reviews. It is asked in the opening message of a new app (SKILL.md → *Opening message*), as question 1, one line per option, in these words or shorter ones, `auto-technical` first and marked recommended — most people who vibe-code an app want to decide what it does and how it looks, not review technical documents:
 
 - `auto-technical` (recommended) — "Ask me about what the app does, how it looks, what is in scope, and the final result; decide the technical steps yourself, including accepting each finished piece."
 - `auto-all` — "Don't stop for reviews; decide everything yourself, including accepting each finished piece and the final result. I'll look at the end."

@@ -11,10 +11,11 @@
  * Templates:            ../assets/progress/progress_template.md and progress_template.html.
  *
  * Usage:
- *   sdd_progress.js [--view full|compact] [--task <task_id>] [--profile sdd|app] [--project <name>]
+ *   sdd_progress.js [--view full|compact|opening] [--task <task_id>] [--profile sdd|app] [--project <name>]
  *                   [--root <dir>] [--bundle-dir <rel>] [--by <actor>] [--no-html] [--json]
  *
- *   --view      full: explains the process and shows a table (session start, or when the human asks); compact (default): two lines.
+ *   --view      full: explains the process and shows a table (session start, or when the human asks); compact (default): two lines;
+ *               opening: the title, the step strip, and the page link only — for a profile's short opening message.
  *   --task      the task to show; default: the open task the app's next backlog item links to, else the open task written last.
  *   --profile   app shows the application steps (default when project/app_status.md exists).
  *   --json      print the view data instead of the Markdown (for debugging).
@@ -54,12 +55,12 @@ function parseArgs(argv) {
     else if (k === '-h' || k === '--help') { usage(); process.exit(0); }
     else fail('Unknown argument: ' + k);
   }
-  if (!['full', 'compact'].includes(a.view)) fail('--view must be full or compact');
+  if (!['full', 'compact', 'opening'].includes(a.view)) fail('--view must be full, compact, or opening');
   if (a.profile && !['sdd', 'app'].includes(a.profile)) fail('--profile must be sdd or app');
   return a;
 }
 function usage() {
-  console.log('Usage: sdd_progress.js [--view full|compact] [--task <task_id>] [--profile sdd|app] [--project <name>]\n' +
+  console.log('Usage: sdd_progress.js [--view full|compact|opening] [--task <task_id>] [--profile sdd|app] [--project <name>]\n' +
     '                      [--root <dir>] [--bundle-dir <rel>] [--by <actor>] [--no-html] [--json]');
 }
 
@@ -566,6 +567,7 @@ function renderTemplate(tpl, ctx) {
 function markdown(model, view, htmlFile) {
   const D = model.data;
   const full = view === 'full';
+  const opening = view === 'opening';
   const t = D.tasks.find((x) => x.id === D.currentTask) || D.tasks[0];
   const appNow = D.now.lane === 'app' ? D.now.step : null;
   const taskNow = D.now.lane === 'task' ? D.now.step : null;
@@ -574,7 +576,7 @@ function markdown(model, view, htmlFile) {
     ? D.now.waitingOnYou.map((w) => '🟡 **' + w.gate + '** — ' + w.what + '. Reply "' + w.reply + '", or tell me what to change.').join(' · ')
     : 'nothing — operations (installs, accounts, deletes, publishing, deploys) are always asked in the chat';
   const ctx = {
-    full, project: D.project, bundle: D.bundle, mode: D.mode.name, mode_label: D.mode.label,
+    full, opening, task_lane: !!t && D.now.lane === 'task', project: D.project, bundle: D.bundle, mode: D.mode.name, mode_label: D.mode.label,
     app: !!D.app, kind: D.app ? D.app.kind : '',
     app_strip: D.app ? strip(D.app.steps, appNow) : '',
     app_table: full && !!D.app && D.now.lane === 'app', app_rows: D.app ? rows(D.app.steps, appNow) : [],
