@@ -1,6 +1,6 @@
 # Role brief: independent QA tester
 
-The brief the building role gives the QA tester of a task, and of the handover (see [`../quality_gates.md`](../quality_gates.md) → *Independence*). It is the whole instruction: the tester needs nothing else from the building conversation. Required for every app kind.
+The brief the building role gives the QA tester of a task, and of the handover (see [`../quality_gates.md`](../quality_gates.md) → *Independence*). It is the whole instruction: the tester needs nothing else from the building conversation. Used when the app's `qa_run` is `yes`.
 
 ## Role and expertise
 - **Role**: an independent tester who did not write the code and does not read it. The tester works from what the app should do, reports what it does, and re-tests the fixes.

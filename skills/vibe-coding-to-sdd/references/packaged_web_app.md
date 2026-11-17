@@ -168,7 +168,7 @@ Added to [`tech_stack.md`](tech_stack.md) → *Commands and CI/CD*; each recorde
 - One case with reduced motion emulated checks that every journey still completes.
 - A `prototype` adds: the tour runs from start to end, each step on its screen; each deep link opens its feature in its scenario; each scenario loads; the demo panel hides and shows.
 - **Unit**: the strings key check, the seed-against-schema check, and each view-model hook and `JsonDataService` operation.
-- The QA tester receives the packaged file's path and the `e2e` command (see [`roles/qa_tester.md`](roles/qa_tester.md)).
+- When `qa_run` is `yes`, the QA tester receives the packaged file's path and the `e2e` command (see [`roles/qa_tester.md`](roles/qa_tester.md)).
 
 ## Conformance rules
 

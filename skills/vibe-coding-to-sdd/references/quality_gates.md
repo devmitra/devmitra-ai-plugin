@@ -46,7 +46,7 @@ Required for a `poc` and an `mvp`. Brief: [`roles/code_reviewer.md`](roles/code_
 
 ## QA role
 
-Required for every app kind. Brief: [`roles/qa_tester.md`](roles/qa_tester.md).
+Run when `app_status.md` → `qa_run` is `yes`, on every task and at the handover; decided at A3 (default `no` for a `presentation` or `prototype`, `yes` for a `poc` or `mvp` — see the profile's **App kinds and rigor**). With `qa_run: no`, plan no QA case. Brief: [`roles/qa_tester.md`](roles/qa_tester.md).
 
 **Recording**: the building role adds a `Run log` row for the QA run (by the tester's actor, with the independence level and the evidence paths) and one `Defects` row per `blocker`, `major`, and `minor` finding. The QA case passes when every `e2e` case passes in the tester's run and no acceptance criterion is without a case.
 
