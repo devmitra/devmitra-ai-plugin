@@ -56,6 +56,8 @@ skills/
   <skill-name>/
     SKILL.md            # canonical skill definition (frontmatter + guidelines + workflow)
     references/         # supporting reference docs, loaded on demand
+      roles/            # harness-independent briefs for delegated roles (e.g. code reviewer, QA tester)
+agents/                 # Claude Code plugin sub-agents: thin adapters that run a role brief
 AGENTS.md               # Copilot/Codex/AGENTS.md-compatible mirror, one section per skill
 .cursor/
   rules/<skill-name>.mdc          # path-scoped Cursor mirror of a skill
