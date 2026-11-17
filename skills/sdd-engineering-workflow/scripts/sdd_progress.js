@@ -4,7 +4,9 @@
  *
  * Reads (never writes): {bundle}/log.md, every tasks/{task}/status.md and features/{feature}/tasks/{task}/status.md,
  *                       and for an application project/app_status.md, app.md, backlog.md, operations.md.
- * Writes:               {bundle}/progress.html — generated, never edited by hand (skipped with --no-html or when no bundle exists).
+ * Writes:               {bundle}/progress.html — generated, never edited by hand (skipped with --no-html). When no bundle exists yet,
+ *                       the page goes to the system temporary folder as sdd-progress-{project}.html, so the human can see the
+ *                       workflow before any record is written; the next run after the bundle exists writes {bundle}/progress.html.
  * Prints:               the rich-text (Markdown) view to stdout, to be shown to the human in chat as is.
  * Templates:            ../assets/progress/progress_template.md and progress_template.html.
  *
@@ -25,6 +27,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const ASSETS = path.join(__dirname, '..', 'assets', 'progress');
 const DEFAULT_DIR = '.agentic_coding';
@@ -215,6 +218,7 @@ const MODES = {
   'auto-approve': 'Gates are auto-approved on your instruction and logged; operations are still asked.',
   'auto-technical': 'You approve what the app does, how it looks, what is in scope, and the final result; technical steps are auto-approved.',
   'auto-all': 'Every gate is auto-approved and logged; you look at the end. Operations are still asked.',
+  'not-chosen': 'Not chosen yet — until you choose, every gate waits for you. Recommended: auto-technical (see Who approves what).',
 };
 const MATRIX = {
   columns: ['review', 'auto-technical', 'auto-all'],
@@ -356,7 +360,8 @@ function build(args) {
   const appDecisions = approvals(appStatusText);
 
   // Mode
-  let mode = isApp ? (fmApp.approval_mode || 'review') : 'review';
+  // An application without a recorded choice shows `not-chosen`; every gate then waits for the human, as in `review`.
+  let mode = isApp ? (MATRIX.who[fmApp.approval_mode] ? fmApp.approval_mode : 'not-chosen') : 'review';
   const taskFiles = hasBundle ? findTasks(bundle) : [];
   const taskApprover = (m) => (isApp ? MATRIX.who[m] && MATRIX.who[m].task : m === 'review' ? 'you' : 'auto') || 'you';
 
@@ -486,7 +491,7 @@ function build(args) {
     bundle: BUNDLE_DIR,
     project: projectName(bundle, root, args.project),
     profile,
-    mode: { name: mode, label: MODES[mode] || '', source: isApp ? 'app_status.md › approval_mode' : mode === 'review' ? 'default: no auto-approve instruction recorded' : "the task's Approvals (auto-approved rows)" },
+    mode: { name: mode, label: MODES[mode] || '', source: isApp ? (mode === 'not-chosen' ? 'no choice recorded in app_status.md › approval_mode' : 'app_status.md › approval_mode') : mode === 'review' ? 'default: no auto-approve instruction recorded' : "the task's Approvals (auto-approved rows)" },
     matrix: isApp ? { columns: MATRIX.columns, rows: MATRIX.rows.map(([label, key]) => [label].concat(MATRIX.columns.map((c) => MATRIX.who[c][key]))) } : null,
     now: { lane, step: stepId, text, waitingOnYou: waiting, last },
     app: app ? { kind: app.kind, next: app.next, status: app.status, steps: app.steps, backlog: app.backlog } : null,
@@ -580,7 +585,7 @@ function markdown(model, view, htmlFile) {
       ' — ' + [last.artifact, last.scope].filter(Boolean).join(', ') + ' · ' + stamp(last.at) : '',
     next: D.now.text, waiting,
     html: !!htmlFile,
-    html_rel: htmlFile ? path.relative(process.cwd(), htmlFile).split(path.sep).join('/') : '',
+    html_rel: !htmlFile ? '' : model.hasBundle ? path.relative(process.cwd(), htmlFile).split(path.sep).join('/') : htmlFile.split(path.sep).join('/'),
     html_url: htmlFile ? 'file://' + htmlFile.split(path.sep).map(encodeURIComponent).join('/').replace(/^\/?/, '/').replace(/^\/([A-Za-z])%3A/, '/$1:') : '',
   };
   return renderTemplate(fs.readFileSync(path.join(ASSETS, 'progress_template.md'), 'utf8'), ctx);
@@ -594,12 +599,13 @@ function main() {
   const model = build(args);
   if (args.json) { console.log(JSON.stringify(model.data, null, 2)); return; }
   let htmlFile = null;
-  if (args.html && model.hasBundle) {
+  if (args.html) {
     const tpl = fs.readFileSync(path.join(ASSETS, 'progress_template.html'), 'utf8');
     const LS = String.fromCharCode(0x2028), PS = String.fromCharCode(0x2029);
     const json = JSON.stringify(model.data).replace(/</g, "\\u003c").split(LS).join("\\u2028").split(PS).join("\\u2029");
     if (!tpl.includes('__SDD_PROGRESS_DATA__')) fail('progress_template.html has no __SDD_PROGRESS_DATA__ placeholder');
-    htmlFile = path.join(model.bundle, 'progress.html');
+    const slug = String(model.data.project || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'project';
+    htmlFile = model.hasBundle ? path.join(model.bundle, 'progress.html') : path.join(os.tmpdir(), 'sdd-progress-' + slug + '.html');
     fs.writeFileSync(htmlFile, tpl.replace('__SDD_PROGRESS_DATA__', () => json));
   }
   process.stdout.write(markdown(model, args.view, htmlFile));

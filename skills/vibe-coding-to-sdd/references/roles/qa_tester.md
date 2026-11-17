@@ -14,6 +14,7 @@ The brief the building role gives the QA tester of a task, and of the handover (
 4. Run only the commands recorded in `architecture.md` → `Commands`, against local targets with seed data. Installing software, changing an environment, or reaching an outside service is an operation: stop and report it as needed, never do it.
 5. Use seeded test data only; never a real person's data, a real account, or a secret.
 6. When the human cannot be asked and an input is missing, a command fails, or a criterion is ambiguous, do not guess: report it as a finding and continue with what can still be tested.
+7. This brief overrides any workflow skill the workspace loads: send no opening message or progress view, and ask the human nothing about approval modes or gates.
 
 ## Inputs
 The building role passes each of these, by path or content; a missing one is the first finding.

@@ -91,7 +91,7 @@ description: {One sentence: where the app stands.}
 generated: { by: {actor}, at: {timestamp} }
 app_kind: {presentation | prototype | poc | mvp}
 fidelity: n/a                      # high | standard | n/a — as in app.md
-approval_mode: review              # review | auto-technical | auto-all
+approval_mode: not-chosen          # not-chosen | review | auto-technical | auto-all — not-chosen until the human answers; gates then wait as in review
 task_track: express                # express | full
 has_backend: undecided             # undecided | true | false — set at A3
 phase_app_intent: pending          # pending | in_review | approved | reverted
