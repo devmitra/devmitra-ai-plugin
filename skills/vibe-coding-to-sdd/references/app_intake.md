@@ -23,6 +23,7 @@ Unclear between two: propose the smaller one, and write in `app.md` → `App kin
    - the problem, and what is true when the app exists;
    - who uses it, and where (phone, computer, both);
    - the three to seven things a user completes (the journeys), and for each what the user sees at the end;
+   - for a `prototype` or `presentation`: who it will be shown to, and — for a `prototype` — which features matter most to show them, in what order (the `Showcase`);
    - what happens the first time, when there is nothing to show yet;
    - what happens when the user types something wrong, and when something fails;
    - what information the app keeps or sends, and whether any of it is about a person, or secret;
@@ -66,9 +67,9 @@ Turning `app.md` into `backlog.md` → `Items`.
 1. **One item is one task**: one feature, or one technical outcome, that a person can review in one sitting. An item expected to need more than 7 `must` requirements or more than 10 work items is split.
 2. **Slice by journey, not by layer.** An item delivers something a user can do end to end — screen, logic, and stored data together — never "all the screens" or "the whole API".
 3. **Kinds**:
-   - `enabling` — the foundation item: project structure, commands, the logging module, the token module, the test harness, containers and migrations when there is a backend. First, where the rigor table requires it.
+   - `enabling` — the foundation item: project structure, commands, the logging module, the token module, the test harness, containers and migrations when there is a backend. First, where the rigor table requires it. With `fidelity: high`, its content is [`packaged_web_app.md`](packaged_web_app.md) → *Foundation item*.
    - `feature` — a `create` task for a new feature; a later item on the same feature is a `change`.
-   - `non-functional` — an app-level requirement (`N`) that no single feature carries: sign-in and permissions, accessibility pass, performance, languages.
+   - `non-functional` — an app-level requirement (`N`) that no single feature carries: sign-in and permissions, accessibility pass, performance, languages (only when the human asked for more than one language).
    - `mitigation` — work added by a risk.
    - `handover` — the last item.
 4. **Order**: the foundation; then the thinnest end-to-end slice of the most important journey; then the remaining `must` items by dependency; then `should`; then `could`; then handover. An item that others wait for comes before them.

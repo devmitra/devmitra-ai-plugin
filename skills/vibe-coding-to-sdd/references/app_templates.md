@@ -18,6 +18,7 @@ status: draft
 revision: 1
 generated: { by: {actor}, at: {timestamp} }
 app_kind: {presentation | prototype | poc | mvp}
+fidelity: {high | standard | n/a}   # presentation and prototype: high unless the human asked for a quick sketch; n/a otherwise
 platforms: [{html | web | ios | android | hybrid}]
 delivery_target: {local | shared-demo | production}
 ---
@@ -37,6 +38,8 @@ delivery_target: {local | shared-demo | production}
 - **Problem and outcome**: {what is hard today, and what is true when the app exists}
 - **Users**: {who uses it, and in what situation}
 - **App kind**: {app kind} — {why this kind, and what the next larger kind would add}
+- **Fidelity**: {high: a polished, animated demo that opens from one file and feels real | standard: a quick clickable sketch, quoting the human | n/a}
+- **Showcase** (a `prototype` with `fidelity: high`; `n/a` otherwise): {features to highlight, in the order shown — each: feature, journey ID, audience, its value in one plain sentence}
 - **Platforms and devices**: {where it runs}
 - **Delivery target**: {local: runs on the human's computer | shared-demo: others can open it | production: real users}
 - **Starting point**: {new app | existing code — see section 9}
@@ -66,6 +69,7 @@ Each line ends with `Source: user | repo:<path> | file:<name> | derived`.
 - **Budget**: {limit, including paid services | none stated}
 - **Compliance**: {rules the app must follow | none stated}
 - **Brand and design inputs**: {guideline, HTML, CSS, URL, or screenshots the human gave | none}
+- **Visual references**: {websites or apps the human likes, and what they like about each — mood only, never a brand source | none | n/a}
 - **Technology asked for**: {stack or architecture the human named, quoted | none}
 
 ## 8. Out of scope (required)
@@ -86,6 +90,7 @@ title: "{app_name} — app status"
 description: {One sentence: where the app stands.}
 generated: { by: {actor}, at: {timestamp} }
 app_kind: {presentation | prototype | poc | mvp}
+fidelity: n/a                      # high | standard | n/a — as in app.md
 approval_mode: review              # review | auto-technical | auto-all
 task_track: express                # express | full
 has_backend: undecided             # undecided | true | false — set at A3

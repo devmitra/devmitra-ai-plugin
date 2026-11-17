@@ -10,7 +10,10 @@ Extends the SDD contract ([`sdd_contract.md`](sdd_contract.md), templates in [`s
 - **App**: the whole product the human asked for. One per `{root}`.
 - **App kind** — recorded in `app.md` and `app_status.md`:
   - `presentation`: interactive HTML that tells a story or shows information. No stored user data, no sign-in, no backend.
-  - `prototype`: clickable screens that look like the app and show its flows with sample data. No working logic; the feature previews are the deliverable.
+  - `prototype`: clickable screens that look like the app and show its flows with invented data. No real logic, no real data, no backend.
+- **Fidelity** — recorded in `app.md` and `app_status.md` for a `presentation` and a `prototype`; `n/a` for the other kinds:
+  - `high` (the default): an offline, responsive, animated React app on invented JSON data, packaged as one HTML file, as [`packaged_web_app.md`](packaged_web_app.md) says. A `prototype` keeps the person's changes in the browser; a `presentation` keeps them only while it is open.
+  - `standard` (only when the human asks for a quick sketch): a `prototype` is one `feature-preview-kit` preview per feature, with no app code; a `presentation` is static HTML without a UI framework.
   - `poc`: working code that proves one or two risky ideas end to end. Not for real users' data.
   - `mvp`: the first version real users can use. Every journey in `app.md` works end to end.
 - **Backlog item**: one row of `backlog.md`. It becomes exactly one task.
@@ -127,24 +130,25 @@ Operations are approved separately from every gate, in every mode.
 
 Derive the app kind from the request and confirm it at A1. When in doubt between two, propose the smaller one and say what the larger would add.
 
-| | `presentation` | `prototype` | `poc` | `mvp` |
-|---|---|---|---|---|
-| Deliverable | static HTML that opens without a server | one clickable preview per feature | a working app of narrow scope | a working app covering every journey |
-| A1, A2, A4, A6 | required | required | required | required |
-| A3 architecture | required — client only | one decision: "the previews are the deliverable"; no stack | required | required |
-| A5 risks | required; may be asked with A4 | required; may be asked with A4 | required | required |
-| Backend | never | never | only when the stack guide's *Is a backend needed?* says so | same |
-| Foundation item first | yes | no | yes | yes |
-| Automated tests | an `e2e` browser case per journey | an automated walk of every preview path | `unit`, `integration`, and `e2e` | same |
-| Independent code review | no | no | yes | yes |
-| Independent QA run | yes | yes | yes | yes |
-| Dependency audit | when it has dependencies | no | yes | yes |
-| Security scan | no | no | when the app has a backend | when the app has a backend |
-| Logging baseline | client rules | no | all rules | all rules |
-| Security baseline | client rules | no | all rules | all rules |
-| Video evidence | when the runner can record | when the runner can record | when the runner can record | when the runner can record |
+| | `presentation` and `prototype`, `fidelity: high` | `presentation`, `fidelity: standard` | `prototype`, `fidelity: standard` | `poc` | `mvp` |
+|---|---|---|---|---|---|
+| Deliverable | one packaged HTML file that opens offline without a server ([`packaged_web_app.md`](packaged_web_app.md)) | static HTML that opens without a server | one clickable preview per feature | a working app of narrow scope | a working app covering every journey |
+| A1, A2, A4, A6 | required | required | required | required | required |
+| A3 architecture | required — client only, with the packaged-app rules `W1`–`W10` | required — client only | one decision: "the previews are the deliverable"; no stack | required | required |
+| A5 risks | required; may be asked with A4 | required; may be asked with A4 | required; may be asked with A4 | required | required |
+| Backend | never | never | never | only when the stack guide's *Is a backend needed?* says so | same |
+| Foundation item first | yes | yes | no | yes | yes |
+| Automated tests | `unit` for view models, the data service, strings, and seed; an `e2e` case per journey against the packaged file, offline | an `e2e` browser case per journey | an automated walk of every preview path | `unit`, `integration`, and `e2e` | same |
+| Independent code review | no | no | no | yes | yes |
+| Independent QA run | yes | yes | yes | yes | yes |
+| Dependency audit | yes | when it has dependencies | no | yes | yes |
+| Security scan | no | no | no | when the app has a backend | when the app has a backend |
+| Logging baseline | client rules | client rules | no | all rules | all rules |
+| Security baseline | client rules | client rules | no | all rules | all rules |
+| Video evidence | when the runner can record | when the runner can record | when the runner can record | when the runner can record | when the runner can record |
 
-- A `prototype` task writes `ux_design.md` in its Design phase and builds the feature's preview in its Build phase: the preview's source files are its `Module map`, and the kit's own checks are its validation cases.
+- A `prototype` task with `fidelity: standard` writes `ux_design.md` in its Design phase and builds the feature's preview in its Build phase: the preview's source files are its `Module map`, and the kit's own checks are its validation cases.
+- A task of an app with `fidelity: high` writes `ux_design.md` in its Design phase (no kit preview unless the human asks) and builds product code in its Build phase, under [`packaged_web_app.md`](packaged_web_app.md).
 - When the security scan is required but the scanner cannot be run — its setup operation is declined, or the machine cannot run it — add a `high` risk row `security scan not run` with response `defer` and the trigger `before any publish or deploy`, mark the scan command `unavailable` in `architecture.md` → `Commands`, and plan no scan case. It is then a gap in the handover.
 
 ## Additions to task documents
@@ -202,8 +206,8 @@ Each run is a `Run log` row whose `By` is the actor that ran it and whose notes 
 ## Checks
 
 **App intent validation** (before A1):
-1. Frontmatter is valid; `app_kind`, `platforms`, and `delivery_target` are set; every required section is filled or `n/a`.
-2. Every journey names its user, its steps, and its outcome; every journey has at least one success criterion; every success criterion states a result a person can see.
+1. Frontmatter is valid; `app_kind`, `platforms`, `delivery_target`, and `fidelity` (`high` or `standard` for a `presentation` or `prototype`, `n/a` otherwise) are set; every required section is filled or `n/a`.
+2. Every journey names its user, its steps, and its outcome; every journey has at least one success criterion; every success criterion states a result a person can see. For a `prototype` with `fidelity: high`, `Showcase` lists at least one feature, each naming a journey that exists.
 3. Every statement names its source (`user`, `repo:<path>`, `file:<name>`, or `derived`).
 4. A technology is named only as a constraint with its source.
 5. No `Open questions` row is `open`; in an auto mode an unanswered one is `defaulted`, with its default under `Assumptions`.
@@ -213,7 +217,7 @@ Each run is a `Run log` row whose `By` is the actor that ran it and whose notes 
 1. Every platform in `app.md` has a client stack; `has_backend` is `true` or `false`, with the reason as a decision row.
 2. Every stack choice has a `project/decisions.md` row with a reason and a rejected alternative; no version number was written from memory.
 3. `architecture.md` has every template section; `Structure` gives each layer's allowed and forbidden dependencies; `Commands` lists set-up, run, build, lint, test, `e2e`, and — where the rigor table requires them — audit and scan.
-4. `Conformance rules` holds every engineering-baseline rule that applies to the app kind, each with its own `C` ID.
+4. `Conformance rules` holds every engineering-baseline rule that applies to the app kind, each with its own `C` ID; with `fidelity: high`, also the packaged-app rules `W1`–`W10`.
 5. Every operation the build needs is a row of `operations.md`.
 6. For a stack the human gave: every review finding is a risk row or an answered question.
 

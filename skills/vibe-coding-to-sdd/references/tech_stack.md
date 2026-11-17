@@ -17,13 +17,15 @@ How to choose the stack when the human gave none, and how to review one they gav
 
 | `app.md` platform | Default | Language | Use instead when |
 |---|---|---|---|
-| `html` (a `presentation`) | static HTML and CSS with TypeScript, built to files that open without a server; no UI framework | TypeScript | the page needs many reusable stateful parts → the `web` default |
+| `html` or `web`, a `presentation` or `prototype` with `fidelity: high` | React on Vite, packaged as one offline HTML file — [`packaged_web_app.md`](packaged_web_app.md) | TypeScript | — |
+| `html` (a `presentation` with `fidelity: standard`) | static HTML and CSS with TypeScript, built to files that open without a server; no UI framework | TypeScript | the page needs many reusable stateful parts → `fidelity: high` |
 | `web` | React with a build tool (candidate: Vite) | TypeScript | the human, their team, or existing code uses Vue → Vue with the same build tool |
 | `ios` | SwiftUI | Swift | — |
 | `android` | Jetpack Compose | Kotlin | — |
 | `hybrid` (one codebase for iOS and Android) | React Native with NativeWind | TypeScript | — |
 
-- A `prototype` has no client stack: its deliverable is the feature previews.
+- A `prototype` with `fidelity: standard` has no client stack: its deliverable is the feature previews.
+- With `fidelity: high`, [`packaged_web_app.md`](packaged_web_app.md) adds its stack, structure, `package` command, offline `e2e` tests, and conformance rules `W1`–`W10` to the defaults below.
 - Choose `hybrid` over two native apps when the human wants both phones from one budget and needs no platform-specific capability; record what is given up.
 - When a planning or programming skill for the chosen stack is installed, its own stack guide decides the pattern and the project structure; this file's defaults fill only what it leaves open.
 
@@ -119,6 +121,7 @@ One entry point for every routine action: a `Makefile` on macOS and Linux, or sc
 | `test` | runs unit and integration tests |
 | `e2e` | runs the end-to-end tests against a locally started app, recording video |
 | `audit` | runs the dependency audit |
+| `package` | builds the single offline HTML file (only with `fidelity: high`) |
 | `scan` | runs the security scan (only with a backend) |
 | `up` / `down` | starts and stops the local containers |
 | `migrate` / `seed` | applies migrations; loads seed data |
