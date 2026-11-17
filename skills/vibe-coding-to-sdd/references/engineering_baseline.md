@@ -2,7 +2,7 @@
 
 Rules every app with product code follows, on top of the SDD engineering guardrails. At step 3 each rule that applies to the app kind is copied into `project/architecture.md` → `Conformance rules` with its own `C` ID and this file's ID as its source (for example `C7 — baseline L3`). From there every task's plan lists it and every task's validation proves it.
 
-**Which rules apply**: a `poc` and an `mvp` — all of them. A `presentation` — the rules marked *client*. A `prototype` — none.
+**Which rules apply**: a `poc` and an `mvp` — all of them. A `presentation`, and a `prototype` with `fidelity: high` — the rules marked *client*. A `prototype` with `fidelity: standard` — none.
 
 ## Index
 [Logging and traceability](#logging-and-traceability) · [What each level records](#what-each-level-records) · [Sensitive data](#sensitive-data) · [Security — client and backend](#security--client-and-backend) · [Security — backend](#security--backend) · [Security — mobile and desktop clients](#security--mobile-and-desktop-clients) · [Proving the rules](#proving-the-rules)

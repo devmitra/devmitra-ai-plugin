@@ -2,7 +2,7 @@
   "name": "devmitra-ai-plugin",
   "displayName": "DevMitra AI Plugin",
   "description": "DevMitra AI plugin: programmer guideline skills for AI coding agents: a stack-agnostic spec-driven development (SDD) workflow, a vibe-coding-to-SDD workflow for whole applications, a frontend development planner, Swift/iOS frontend development, and a feature preview kit for design-system bases and clickable previews.",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "author": {
     "name": "Pushan Mitra",
     "email": "mitra.pushan@gmail.com"

@@ -20,7 +20,8 @@ The building role passes each of these, by path or content; a missing one is the
 - the task's `intent.md` (acceptance criteria and the failure paths it names) and `validation.md` → `Validation plan`;
 - `project/architecture.md` → `Commands`;
 - for the handover: `app.md` → `Success criteria` and `Journeys`;
-- for a `prototype`: the feature preview's path and the kit's walk command;
+- for a `prototype` with `fidelity: standard`: the feature preview's path and the kit's walk command;
+- for a `presentation` or `prototype` with `fidelity: high`: the `package` and `e2e` commands and the packaged file's path;
 - for a re-test: the previous report and the `Defects` rows it produced.
 
 ## Workflow
@@ -28,7 +29,8 @@ The building role passes each of these, by path or content; a missing one is the
 2. **Automated cases**: run every `e2e` case of the validation plan with the stack's end-to-end tool, recording video where it can and keeping its trace or screenshots on failure.
 3. **Acceptance criteria**: for each criterion, perform it as written — the given, the action, the result — in the running app, and compare with what its case asserts.
 4. **Unhappy paths**: for each journey, try each failure the intent names — wrong input, nothing to show yet, a failure of something it depends on.
-5. **Prototype**: run the kit's automated walk over every path of the preview — the main path, validation errors, overlays, back, navigation.
+5. **Prototype** (`fidelity: standard`): run the kit's automated walk over every path of the preview — the main path, validation errors, overlays, back, navigation.
+   **Packaged app** (`fidelity: high`): open the packaged file from the file system with the network blocked; perform each journey at phone and desktop width; for a `prototype`, reload after a change to see it kept, then use Reset demo data; for a `presentation`, reload to see the start state; repeat one journey with reduced motion. For a `prototype`, also run the feature tour from start to end, open each showcase deep link, and load each demo scenario.
 6. **Traceability**: where the engineering baseline applies, pick one journey and follow its correlation ID through the logs of every part.
 7. **Report**: write the report in the form below and return it.
 8. **Re-test** (when given fixes): from a clean state, re-run the failed cases and the criteria they cover, then every `e2e` case once more; report each earlier finding as `fixed` or still open. After the third round on the same finding, report it as `blocker — needs the human`.
@@ -40,7 +42,8 @@ The building role passes each of these, by path or content; a missing one is the
 - [ ] no case passes while the app does not do what its criterion says;
 - [ ] each failure path the intent names behaves as the intent says;
 - [ ] each new screen is reachable by keyboard or screen reader as the plan's accessibility cases require;
-- [ ] for a `prototype`: the walk covered every path of the preview;
+- [ ] for a `prototype` with `fidelity: standard`: the walk covered every path of the preview;
+- [ ] with `fidelity: high`: the packaged file opened offline, made no network request, and every journey completed at phone and desktop width; for a `prototype`, the tour, every showcase deep link, and every demo scenario worked;
 - [ ] where the baseline applies: one journey's correlation ID was followed through every part's logs;
 - [ ] for the handover: each success criterion of `app.md` was run end to end;
 - [ ] every video and screenshot shows seeded data only, and its file exists.
