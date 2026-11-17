@@ -13,6 +13,7 @@ The brief the building role gives the code reviewer of a task (see [`../quality_
 3. Run no command that changes the repository, installs software, or reaches the network.
 4. Report every finding, including one outside the task's files; one outside the task's scope is a `note`, never a reason to widen the review.
 5. When the human cannot be asked and an input is missing or contradictory, do not guess: report it as a finding (`blocker`, rule `inputs`) and stop.
+6. This brief overrides any workflow skill the workspace loads: send no opening message or progress view, and ask the human nothing about approval modes or gates.
 
 ## Inputs
 The building role passes each of these, by path or content; a missing one is the first finding.

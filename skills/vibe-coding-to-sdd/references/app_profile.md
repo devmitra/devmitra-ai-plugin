@@ -83,15 +83,17 @@ Extends the SDD contract ([`sdd_contract.md`](sdd_contract.md), templates in [`s
 
 ## Approval modes
 
-The mode is the human's standing instruction about reviews. It is asked once, in the first interview round, in these words or plainer ones:
+The mode is the human's standing instruction about reviews. It is asked in the opening message of a new app (SKILL.md → *Opening message*), as question 1, in these words or plainer ones, `auto-technical` first and marked recommended — most people who vibe-code an app want to decide what it does and how it looks, not review technical documents:
 
-- `review` — "Show me each step and wait for my OK."
-- `auto-technical` — "Ask me about what the app does, how it looks, what is in scope, and the final result; decide the technical steps yourself, including accepting each finished piece."
+- `auto-technical` (recommended) — "Ask me about what the app does, how it looks, what is in scope, and the final result; decide the technical steps yourself, including accepting each finished piece."
 - `auto-all` — "Don't stop for reviews; decide everything yourself, including accepting each finished piece and the final result. I'll look at the end."
+- `review` — "Show me each step and wait for my OK."
 
-Record it as `approval_mode` in `app_status.md` and as an `Approvals` row with gate `MODE`, quoting the human's words. No answer means `review`. The human may change it at any time by saying so; add a new `MODE` row. This record is the project document the contract's **Scope of auto-approve** requires, so the mode carries across tasks and sessions.
+Record it as `approval_mode` in `app_status.md` and as an `Approvals` row with gate `MODE`, quoting the human's words. Until the human chooses, `approval_mode` is `not-chosen`: every gate waits for the human, as in `review`, and no `MODE` row is written — silence or a missing answer is never auto-approve. The human may change the mode at any time by saying so; add a new `MODE` row. This record is the project document the contract's **Scope of auto-approve** requires, so the mode carries across tasks and sessions.
 
-| Gate | `review` | `auto-technical` | `auto-all` |
+**Later sessions**: the opening message of a session that resumes the app shows the workflow and the recorded mode. While the mode is `review` or `not-chosen`, it offers the auto modes again and waits for the answer; in an auto mode it names the mode, says how to change it, and the work continues. A role started with a brief (code reviewer, QA tester) never asks.
+
+| Gate | `review` (and `not-chosen`) | `auto-technical` | `auto-all` |
 |---|---|---|---|
 | G0 + A1 app intent | human | human | auto |
 | A2 design system | human | human | auto |

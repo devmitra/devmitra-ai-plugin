@@ -42,8 +42,21 @@ Give a person who describes an app in plain words the speed of vibe coding and t
 - **Gate request** — one message: the gate and what is approved; links to the documents and, where one exists, the page to look at; at most 10 lines of summary; what changed since the last revision; and a closing question that names the gate ("Approve A4, or tell me what to change?").
 - Never invent URLs, IDs, endpoints, account names, or package names; never write a version number from memory — read it from the registry or the tool when the plan is written.
 
+## Opening message
+The first message of every session the human drives — a new app, or a new session that resumes one — comes before any document is written or changed, and holds, in this order:
+1. **The workflow** — the full [progress view](#progress-view) (`--view full --profile app`) in rich text, with the clickable link to its page: `{bundle}/progress.html`, or, before the bundle exists, the temporary page the script names in its output.
+2. **What happens and why** — at most three plain sentences: the app is built in small approved pieces; which steps need the human in each approval mode; and that a later change or fix starts from a few short documents instead of a re-read of all the code.
+3. **The approval-mode question** — question 1, asked as the profile's **Approval modes** says: the three modes in plain words, `auto-technical` first and marked recommended, each saying what the human will be asked; and one line that installs, accounts, deletes, publishing, and deploys are asked in every mode.
+4. **New app only** — the first interview round in the same message: up to 4 further questions derived from the request, as [`references/app_intake.md`](references/app_intake.md) → *Interview* ranks them, so the human answers everything in one reply.
+
+**Resumed app** — the mode is already recorded in `app_status.md`:
+- `review` or `not-chosen`: send items 1–3, with the next pending gate request when there is one, and wait for the answer before resuming.
+- `auto-technical` or `auto-all`: send item 1, then one line naming the mode and how to change it ("say *switch to review* to approve each step yourself"), and resume without waiting.
+
+**Never** for a role this skill starts — the independent code reviewer, the QA tester, or any other sub-agent or fresh session given a brief: it follows its brief only, sends no opening message, and asks the human nothing.
+
 ## Approval modes and operations
-- The mode is asked once, in the first interview round, and recorded in `app_status.md` (`approval_mode`, and a `MODE` row quoting the human's words): `review`, `auto-technical`, or `auto-all` — the profile's **Approval modes** table says which gates each mode auto-approves. With no answer, the mode is `review`.
+- The mode is asked in the [opening message](#opening-message) and recorded in `app_status.md` (`approval_mode`, and a `MODE` row quoting the human's words): `review`, `auto-technical`, or `auto-all` — the profile's **Approval modes** table says which gates each mode auto-approves. Until the human chooses, `approval_mode` is `not-chosen` and every gate waits for the human, as in `review`; silence is never auto-approve. A gate request sent while the mode is `not-chosen` repeats the mode question once.
 - An auto-approved gate is recorded as the contract's **Approvals** says: decision `auto-approved`, by the agent actor, notes quoting the `MODE` row, every choice the human would have made logged under `Assumptions`.
 - **Operations** (profile → **Operations**) are asked in every mode, before each one, and recorded in `project/operations.md`. A declined or unanswered operation is not performed.
 - A session in which the human cannot be asked: record the gate or operation as `pending`, write the `Handoff note`, and end the turn.
@@ -65,19 +78,19 @@ Every app kind passes every step; the profile's rigor table decides how much eac
 
 ### 0. Session start
 1. Run the contract's **Discovery**.
-2. **Bundle with `project/app.md`**: read `project/app_status.md` (frontmatter and `Handoff note`), check its claim as the contract's **Resume check** says, and resume at `next`. With `next: Build`, run `backlog check` and continue the open task, or pick the next item (step 6).
+2. **Bundle with `project/app.md`**: read `project/app_status.md` (frontmatter and `Handoff note`), check its claim as the contract's **Resume check** says, send the [opening message](#opening-message) for a resumed app, and resume at `next`. With `next: Build`, run `backlog check` and continue the open task, or pick the next item (step 6).
 3. **Bundle without `project/app.md`**: a request for one feature, change, or bug belongs to `sdd-engineering-workflow`. A request to extend it into a whole app, or to bring it under an app-level backlog, continues at step 1.2.
 4. **No bundle, repository has product code**: the existing-app path of [`references/app_intake.md`](references/app_intake.md), from step 1.
 5. **No bundle, empty or new directory**: step 1.
 6. A request that conflicts with an approved app-level document is an [app-level revert](#app-level-revert), never a silent edit.
-7. Show the full [progress view](#progress-view) (`--view full`; `--profile app` matters only until `project/app_status.md` exists). This comes before the first question, even when no bundle exists yet.
+7. **New app** (cases 4 and 5): send the [opening message](#opening-message) — workflow, approval-mode question, and first interview round — before writing anything; step 1 starts from the human's reply. The opening message comes first even when no bundle exists yet.
 
 ### 1. Bundle and app intent (gates G0 + A1)
 Read [`references/app_intake.md`](references/app_intake.md) first.
-1. Bootstrap the bundle with `sdd-engineering-workflow` step 1. For a new app `project/architecture.md` stays `draft`; step 3 completes it.
-2. Say once, in at most three sentences, what will be recorded and why: the app is built in small approved pieces, so a later change or fix starts from a few short documents instead of a re-read of all the code.
-3. Derive the app kind, platforms, journeys, data, and constraints from the request and any files given; create `project/app.md` and `project/app_status.md` from the templates; list both in the bundle `index.md`. For a `presentation` or a `prototype`, set `fidelity` as [`references/packaged_web_app.md`](references/packaged_web_app.md) → *When it applies* says: `high` unless the human asks for a quick sketch; the A1 gate request says in one plain sentence what that gives them.
-4. Run the interview until no question is `open`. The first round always includes the approval mode and, when it cannot be derived, the app kind and the delivery target. Set `task_track` in `app_status.md` to `express`, as the SDD vibe-coding guardrail proposes; set it to `full` only when the human asks to review each task's intent and plan separately.
+1. Bootstrap the bundle with `sdd-engineering-workflow` step 1. For a new app `project/architecture.md` stays `draft`; step 3 completes it. The *why records* explanation was given in the [opening message](#opening-message); do not repeat it.
+2. Derive the app kind, platforms, journeys, data, and constraints from the request, any files given, and the human's reply to the opening message; create `project/app.md` and `project/app_status.md` from the templates; list both in the bundle `index.md`. For a `presentation` or a `prototype`, set `fidelity` as [`references/packaged_web_app.md`](references/packaged_web_app.md) → *When it applies* says: `high` unless the human asks for a quick sketch; the A1 gate request says in one plain sentence what that gives them.
+3. Record the approval mode from the reply: `approval_mode` and a `MODE` row quoting the human's words; with no choice in the reply, `not-chosen`.
+4. Run the interview until no question is `open`; its first round was asked in the opening message — record those answers first. The first round includes, when it cannot be derived, the app kind and the delivery target. Set `task_track` in `app_status.md` to `express`, as the SDD vibe-coding guardrail proposes; set it to `full` only when the human asks to review each task's intent and plan separately.
 5. Run the profile's **App intent validation** and fix every failure.
 6. Set `phase_app_intent: in_review` and send one gate request for G0 and A1. On approval: `phase_app_intent: approved`, `app_revision` to the latest revision, `app.md` to `stable` with `verified`, an `Approvals` row, `next: Design system`.
 
@@ -147,11 +160,12 @@ Before ending any turn that changed an app-level document or a task: run the con
 
 ## Progress view
 The human sees the workflow, its gates, and where the work stands in **every** harness; a turn that ends a step, decides a gate, or records a blocker or a revert without the view is incomplete. The bundled script is one way to render it, never a condition for showing it.
-1. **Script** — when you can run commands: locate `sdd_progress.js` (it ships in the `sdd-engineering-workflow` skill's `scripts/` directory; if the path is unknown, search the skills directories of the workspace and the user's home for that file name), then run `progress --root {root} --profile app --by {actor}` (add `--view full` at session start and on request). Put its printed text in your message unchanged, and give the human the clickable link to the generated `{bundle}/progress.html` (relative Markdown link plus absolute `file://` URL).
+1. **Script** — when you can run commands: locate `sdd_progress.js` (it ships in the `sdd-engineering-workflow` skill's `scripts/` directory; if the path is unknown, search the skills directories of the workspace and the user's home for that file name), then run `progress --root {root} --profile app --by {actor}` (add `--view full` in the opening message and on request). Put its printed text in your message unchanged, and give the human the clickable link to the generated page (relative Markdown link plus absolute `file://` URL): `{bundle}/progress.html`, or, before the bundle exists, the page the script writes to the system temporary folder and names in its output — give its absolute path and `file://` URL.
 2. **By hand** — when you cannot run commands, cannot find the script, or it fails: write the view yourself into your message from `app_status.md` and the open task's `status.md`, in the form of the `sdd-engineering-workflow` skill's `assets/progress/progress_template.md` (if that file is unreadable, use this form):
-   - one line, `SDD · {project} › {task title} · {approval mode} mode`;
+   - one line, `SDD · {project} › {task title} · {approval mode} mode` (`not-chosen` until the human picks one);
    - the app strip: `A1 intent → A2 design system → A3 architecture → A4 backlog → A5 risks → Build → A6 handover`, each step with its icon (✅ approved · 🤖 auto-approved · 🟡 waiting for the human · 🔵 in progress · ⚪ not started · ⏭️ skipped · ⛔ blocked · ↩️ reverted), the current step in bold; the current task's strip G1 → G2 → G3 → Build → G4 the same way (full view: a table of step, gate, what is approved, who approves, state);
    - `Just now` (the latest gate decision, by whom), `Next`, and `Waiting on you`.
+   In the opening message, also add the approval table of the profile's **Approval modes** (gate × mode, who approves), since the page that shows it was not generated.
 3. **The page** — `progress.html` exists only when the script ran. When it did not, say so in one line and give the command (`progress --root {root} --profile app`, with the script's real path) for the human to run, so the page is one step away; never invent a page or a link to a file that does not exist.
 4. Never skip the view because a script is missing, a shell is unavailable, or the harness has its own task list; the view comes from the records, which are always written.
 

@@ -36,7 +36,7 @@ Unclear between two: propose the smaller one, and write in `app.md` → `App kin
    - what it deliberately does not do;
    - the approval mode (profile → **Approval modes**).
 3. **Rank** what is still open by how much the answer changes the build: app kind and journeys first, then data and sign-in, then delivery target, then the rest.
-4. **Ask one round at a time**, in the form SKILL.md → *Talking to the human* gives. The first round always carries the approval mode.
+4. **Ask one round at a time**, in the form SKILL.md → *Talking to the human* gives. The first round goes in the opening message (SKILL.md → *Opening message*): the approval mode is question 1, so at most 4 interview questions follow it, ranked as above.
 5. **Record** each answer in `Open questions` (state `answered`, the answer, the sections it changed) before using it. `defaults` from the human is an answer. `defaulted` is only for a question left unanswered in an auto mode; add its default to `app_status.md` → `Assumptions`.
 6. **Repeat** until no question is `open`. A question about how a feature behaves in detail is not asked here: it belongs to that feature's task. Ask at app level only what changes the app kind, a journey, the data, the platforms, or the delivery target.
 
