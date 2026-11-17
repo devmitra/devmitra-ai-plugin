@@ -17,4 +17,5 @@ Follow `skills/frontend-development-planner/SKILL.md` exactly; it is the source 
 - On a revert or re-plan, add each trigger to the `Open questions` of the document it conflicts with and resolve them all before editing it.
 - Plan for isolation (injected, mockable dependencies), modularity, security and privacy, accessibility, localization, and the architecture's conformance rules; log every structural choice in `Decisions`; never silently deviate from the pattern.
 - Before ending any turn that changed a task, update the `Handoff note` in `status.md`.
+- Show the SDD progress view (`node skills/sdd-engineering-workflow/scripts/sdd_progress.js --root {root}`): full at session start, compact after each step and gate decision.
 - Never invent URLs, IDs, endpoints, or package names; never write secrets or personal data into artifacts.

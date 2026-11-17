@@ -72,6 +72,7 @@ Applies when the user asks to build or extend a UI app or feature without specif
    4. Revise `intent.md`/`plan.md` (a revision-table row and a new revision per edit) and continue at the first incomplete step (usually step 5).
 4. **Open task with both phases `approved`**: planning is done; tell the user to continue with the stack's programming skill (named in the stack guide). If the user asks to re-plan, set the owning phase to `reverted`, record the request in `Reverts`, and go to 3.
 5. End every turn that changed a task with the contract's **Session end** (progress, `git.head`, the `Handoff note`, the claim).
+6. Show the progress view as `sdd-engineering-workflow` → *Progress view* says — full at session start, compact after each step and gate decision (`node <sdd-engineering-workflow dir>/scripts/sdd_progress.js --root {root}`).
 
 ## Inputs
 

@@ -19,6 +19,7 @@ Give a person who describes an app in plain words the speed of vibe coding and t
 - [`references/quality_gates.md`](references/quality_gates.md) — stop criteria, the independent review and QA roles, the security scan, and video evidence (read at steps 6 and 7).
 - [`references/sdd_contract.md`](references/sdd_contract.md) and [`references/sdd_templates.md`](references/sdd_templates.md) — byte-identical copies of the `sdd-engineering-workflow` skill's files.
 - [`scripts/backlog.js`](scripts/backlog.js) — builds the tracker and the board from `backlog.md`. Below, `backlog` = `node <this-skill-dir>/scripts/backlog.js` (Node 16+, no dependencies).
+- The **progress view** of `sdd-engineering-workflow` (its SKILL.md → *Progress view*) — the app steps A1–A6 above the current task's steps, in chat and in `{bundle}/progress.html`. Below, `progress` = `node <sdd-engineering-workflow dir>/scripts/sdd_progress.js`. See [Progress view](#progress-view) for finding it and for the by-hand fallback.
 
 ## Principles
 1. **Records before code, at every size.** No task is opened before the app-level documents its app kind requires are approved; no product code is written outside a task.
@@ -67,6 +68,7 @@ Every app kind passes every step; the profile's rigor table decides how much eac
 4. **No bundle, repository has product code**: the existing-app path of [`references/app_intake.md`](references/app_intake.md), from step 1.
 5. **No bundle, empty or new directory**: step 1.
 6. A request that conflicts with an approved app-level document is an [app-level revert](#app-level-revert), never a silent edit.
+7. Show the full [progress view](#progress-view) (`--view full`; `--profile app` matters only until `project/app_status.md` exists). This comes before the first question, even when no bundle exists yet.
 
 ### 1. Bundle and app intent (gates G0 + A1)
 Read [`references/app_intake.md`](references/app_intake.md) first.
@@ -139,10 +141,20 @@ Used when new input, review feedback, or a task's revert conflicts with an appro
 3. Turn each trigger into an `Open questions` row, resolve every one with the human, revise the document (new revision), and return through its gate. Then re-check each open task against the new revision; a task it conflicts with reverts as the contract says.
 
 ### Session end
-Before ending any turn that changed an app-level document or a task: run the contract's **Session end** for the task; run `backlog sync`; in `app_status.md` set `generated` and `claim`, rewrite the `Handoff note` (done, next action, watch out), and set `next`.
+Before ending any turn that changed an app-level document or a task: run the contract's **Session end** for the task; run `backlog sync`; in `app_status.md` set `generated` and `claim`, rewrite the `Handoff note` (done, next action, watch out), and set `next`; then show the compact [progress view](#progress-view).
+
+## Progress view
+The human sees the workflow, its gates, and where the work stands in **every** harness; a turn that ends a step, decides a gate, or records a blocker or a revert without the view is incomplete. The bundled script is one way to render it, never a condition for showing it.
+1. **Script** — when you can run commands: locate `sdd_progress.js` (it ships in the `sdd-engineering-workflow` skill's `scripts/` directory; if the path is unknown, search the skills directories of the workspace and the user's home for that file name), then run `progress --root {root} --profile app --by {actor}` (add `--view full` at session start and on request). Put its printed text in your message unchanged, and give the human the clickable link to the generated `{bundle}/progress.html` (relative Markdown link plus absolute `file://` URL).
+2. **By hand** — when you cannot run commands, cannot find the script, or it fails: write the view yourself into your message from `app_status.md` and the open task's `status.md`, in the form of the `sdd-engineering-workflow` skill's `assets/progress/progress_template.md` (if that file is unreadable, use this form):
+   - one line, `SDD · {project} › {task title} · {approval mode} mode`;
+   - the app strip: `A1 intent → A2 design system → A3 architecture → A4 backlog → A5 risks → Build → A6 handover`, each step with its icon (✅ approved · 🤖 auto-approved · 🟡 waiting for the human · 🔵 in progress · ⚪ not started · ⏭️ skipped · ⛔ blocked · ↩️ reverted), the current step in bold; the current task's strip G1 → G2 → G3 → Build → G4 the same way (full view: a table of step, gate, what is approved, who approves, state);
+   - `Just now` (the latest gate decision, by whom), `Next`, and `Waiting on you`.
+3. **The page** — `progress.html` exists only when the script ran. When it did not, say so in one line and give the command (`progress --root {root} --profile app`, with the script's real path) for the human to run, so the page is one step away; never invent a page or a link to a file that does not exist.
+4. Never skip the view because a script is missing, a shell is unavailable, or the harness has its own task list; the view comes from the records, which are always written.
 
 ## Engineering baseline
 Every app with product code follows [`references/engineering_baseline.md`](references/engineering_baseline.md): one logging module with `debug`, `info`, `warning`, and `error` levels that makes each execution traceable end to end and never logs sensitive data unmasked; and the security rules for the client and the backend. The rules enter `architecture.md` → `Conformance rules` at step 3, so each task's plan lists them and each task's validation proves them.
 
 ## Report
-At the end of each step, tell the human in a few plain lines: what was recorded, what was decided for them and why, what is next, and anything they must do. Give a clickable link — relative Markdown link plus absolute `file://` URL — to every HTML page or video they are asked to look at.
+At the end of each step, tell the human in a few plain lines: what was recorded, what was decided for them and why, what is next, and anything they must do; end with the compact [progress view](#progress-view) (never omitted), which also shows every gate an approval mode auto-approved. Give a clickable link — relative Markdown link plus absolute `file://` URL — to every HTML page or video they are asked to look at.
