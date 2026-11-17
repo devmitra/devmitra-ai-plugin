@@ -15,6 +15,7 @@ Follow `skills/swift-frontend-programming/SKILL.md` exactly; it is the source of
 - Isolation: every dependency is a protocol with a live implementation and a mock, injected; a `#Preview` per planned state; UI tests launch the feature alone via the plan's harness.
 - Failures: record them in `status.md` → `Blockers`; never skip tests or suppress warnings; after three attempts or when user action is needed, set `phase_build: blocked` and stop.
 - Before ending any turn that changed the task: update `Progress`, `git.head`, and the `Handoff note`; write `handoff.md` when the contract requires it.
+- Show the SDD progress view (`node skills/sdd-engineering-workflow/scripts/sdd_progress.js --root {root}`): full at session start, compact after each step and gate decision.
 - Guardrails: no force-unwraps/force-casts, `@MainActor` UI, Swift 6 concurrency, typed errors, private-by-default OSLog, Keychain for secrets, ATS, privacy manifest and usage descriptions, String Catalog localization, VoiceOver/Dynamic Type/44 pt targets/WCAG AA/Reduce Motion/keyboard focus, `performAccessibilityAudit()` per new view, SwiftLint, zero warnings.
 - Never hardcode a simulator name; pick one from `xcrun simctl list devices available`.
 - Never invent URLs, IDs, endpoints, or package names; never put secrets or personal data in code, fixtures, screenshots, logs, or artifacts.

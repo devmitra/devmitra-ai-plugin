@@ -32,7 +32,7 @@ Terms are defined in the contract's **Terms** and the profile's **Terms**. "Feat
 
 ## Knowledge discovery and session continuity
 
-`{bundle}/` is an OKF knowledge bundle covering the project documents and every feature's spec and tasks. Start every session with the contract's **Discovery** (bundle `index.md` → feature `index.md` → the task's `status.md` first) and its **Resume check**; end every turn that changed the task with its **Session end** (`Progress`, `git.head`, the `Handoff note`, `handoff.md` when required, the claim). Keep the indexes and logs current in the same step that changes a document.
+`{bundle}/` is an OKF knowledge bundle covering the project documents and every feature's spec and tasks. Start every session with the contract's **Discovery** (bundle `index.md` → feature `index.md` → the task's `status.md` first) and its **Resume check**; end every turn that changed the task with its **Session end** (`Progress`, `git.head`, the `Handoff note`, `handoff.md` when required, the claim). Keep the indexes and logs current in the same step that changes a document. Show the progress view as `sdd-engineering-workflow` → *Progress view* says — full at session start, compact after each step and gate decision (`node <sdd-engineering-workflow dir>/scripts/sdd_progress.js --root {root}`).
 
 ## Approval policy (applies to every step)
 

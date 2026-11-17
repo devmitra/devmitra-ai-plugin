@@ -15,6 +15,7 @@ Establish a spec-driven development lifecycle that any agent, in any harness, ca
 - [`references/sdd_templates.md`](references/sdd_templates.md) — the template of every document.
 - [`references/intake.md`](references/intake.md) — classifying the input and running the interview (read at step 2).
 - [`references/bundle_workflow.md`](references/bundle_workflow.md) — the playbook copied into every bundle (read at step 1).
+- [`scripts/sdd_progress.js`](scripts/sdd_progress.js) with [`assets/progress/progress_template.md`](assets/progress/progress_template.md) and [`assets/progress/progress_template.html`](assets/progress/progress_template.html) — render the [progress view](#progress-view). Below, `progress` = `node <this-skill-dir>/scripts/sdd_progress.js` (Node 16+, no dependencies).
 
 ## Principles
 1. **The artifacts carry the context, not the conversation.** Anything a later session needs is written into the bundle before the turn ends.
@@ -27,6 +28,7 @@ Establish a spec-driven development lifecycle that any agent, in any harness, ca
 ## Agent and harness independence
 - This skill needs only three abilities: reading and writing files in the workspace, asking the human in chat, and — when available — running shell commands. It names no tool, command, or agent feature. Where your harness has an equivalent (a question dialog, a task list, sub-agents), you may use it, provided the same records are written.
 - State lives only in the bundle. Never rely on conversation history, harness memory, or a tool-specific task list for anything a later session needs.
+- The bundled `progress` script is optional: it only renders the [progress view](#progress-view) from the records, and the same view can be written by hand. The view itself is not optional: a missing script or shell never excuses omitting it.
 - No shell: you cannot run commands, so ask the human to run each validation command and record the run with their actor. No git, or a repository that does not track the task's product files (for example, it ignores `{root}`): omit the `git` anchor, write `n/a` in the `Run log` → `Commit` column, and skip the repository step of the resume check.
 - Identify yourself and read the time as the contract's **Terms** define.
 
@@ -37,6 +39,14 @@ Establish a spec-driven development lifecycle that any agent, in any harness, ca
 - **Recording, non-interactive sessions, and auto-approve**: per the contract's **Approvals**. Never assume an answer and continue.
 - **Operations**: installing, updating, or removing software on the system; setting up or changing an environment, account, or service; deleting files or data the task did not create; publishing; and deploying each need their own approval, asked and recorded as the contract's **Approvals** → *Operations* says. A gate approval never covers one, and neither does auto-approve: auto-approve waives the review of documents and of the code built from them, nothing else.
 - Never invent external references (URLs, IDs, endpoints, ticket numbers, package names); ask, or use marked placeholders.
+
+## Progress view
+Shows the human the workflow, every gate, who approves it, and where the work stands. It is rendered from the bundle records and is never a record itself.
+- **Render** after the records of the step are written, so the view shows the decision just made. With a shell: `progress --root {root} --by {actor}` (add `--view full`, and `--task {task_id}` when more than one task is open). It prints the rich text — put it in your message unchanged — and writes `{bundle}/progress.html`. Without a shell, or when the script cannot be found or fails: fill [`assets/progress/progress_template.md`](assets/progress/progress_template.md) by hand from `status.md` and put it in your message; say in one line that the page was not generated and give the command that makes it, with the script's real path. Never link a page that does not exist.
+- **Full view**: at session start — after step 0, or before step 1 when there is no bundle — and whenever the human asks where things stand.
+- **Compact view**: at the end of every step; after every gate decision, including `auto-approved` and `pending`; and when a blocker or a revert is recorded. In a gate request it goes before the closing question. Never after single commands or file edits.
+- An auto-approved gate is always shown: the view is how the human sees what was decided for them.
+- `progress.html` is generated: never edit it by hand; it follows the bundle's commit or gitignore choice (G0). Its *Copy reply* button only copies text — an approval counts only when the human sends it in chat.
 
 ## Vibe-coding guardrail
 Applies when the human asks to build or extend an app or feature without specifications — "vibe code this", "just build it", "quick prototype", "no planning", "one-shot it" — or sends a multi-file build request and declines to specify it.
@@ -73,6 +83,7 @@ Every step ends in a recorded state, so each can run in its own session or be do
 2. Find the task: the one the request names; otherwise the open task of the feature the request concerns. Several candidates → ask. None → step 2.
 3. An existing task: run the contract's **Resume check**, then continue at `status.md` → `next`. If the request conflicts with an approved document, [revert](#revert).
 4. A request to change behaviour or structure with no task — including "just fix it" and "quick change" — opens a task at step 2. Never write product code first.
+5. Show the [progress view](#progress-view), full.
 
 ### 1. Bootstrap the bundle (gate G0)
 1. Propose `{root}`: the repository root, or the workspace or package directory the human names.
@@ -137,7 +148,7 @@ Only when `phase_design` is `pending`. Write `ux_design.md` from the template, c
 5. Run the contract's **Close checklist**, then give the human the links to `status.md`, `validation.md`, and `spec.md`, and three lines: what was built, the validation result, the follow-ups. Each follow-up is a candidate new task; never start one unasked.
 
 ### Handoff
-Before ending any turn that changed a task — finished or not — run the contract's **Session end**: `Progress`, `git.head`, the `Handoff note`, `handoff.md` when the contract requires it, and the claim. Write `handoff.md` from facts you checked in this session and list the rest as assumed. When the human asks to hand a task to another agent or session, do the same and tell them the path of `status.md` — that file is all the receiver needs to start.
+Before ending any turn that changed a task — finished or not — run the contract's **Session end**: `Progress`, `git.head`, the `Handoff note`, `handoff.md` when the contract requires it, and the claim; then show the compact [progress view](#progress-view). Write `handoff.md` from facts you checked in this session and list the rest as assumed. When the human asks to hand a task to another agent or session, do the same and tell them the path of `status.md` — that file is all the receiver needs to start.
 
 ### Revert
 Used whenever new input, review feedback, a failure, or an acceptance remark conflicts with an approved intent, plan, or design:

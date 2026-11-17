@@ -19,5 +19,6 @@ Follow `skills/sdd-engineering-workflow/SKILL.md` exactly; it is the source of t
 - Conflicting input reverts to the phase that owns the document; anything noticed outside the plan, and new scope at acceptance, is recorded in `status.md` → `Follow-ups` and becomes a new task, never built unasked.
 - Before ending any turn that changed a task: update `Progress`, `git.head`, and the `Handoff note`; write `handoff.md` when the contract requires it.
 - Engineering guardrails: one responsibility per file, separated UI / logic / data access, one-way dependencies, a `Decisions` row for every technology, dependency, data-model, interface, or structure choice, every acceptance criterion covered by a work item and a validation case, append-only validation evidence.
-- State lives only in the bundle; the skill names no tool, command, or agent feature.
+- Progress view: full at session start and on request, compact after every step, gate decision (auto-approved included), blocker, and revert — never after single commands. Render with `node skills/sdd-engineering-workflow/scripts/sdd_progress.js --root {root}` (prints rich text for chat, writes the generated `{bundle}/progress.html`), or fill `assets/progress/progress_template.md` by hand without a shell. Approvals stay in chat.
+- State lives only in the bundle; the skill names no tool, command, or agent feature beyond its own optional progress script.
 - Never invent URLs, IDs, endpoints, ticket numbers, or package names; never write secrets or personal data into artifacts.
